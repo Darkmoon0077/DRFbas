@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+from celery import Celery
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#1z_xe-ou5%o&-&$f1$y$ya11sx*r!q!j&*#n-r!+#n40*8m_='
@@ -112,3 +113,7 @@ SWAGGER_SETTINGS = {
 CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
 CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
 BROKER_URL = 'redis://localhost:6379/0'
+app = Celery('protected')
+
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
