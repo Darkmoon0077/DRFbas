@@ -6,6 +6,7 @@ from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_yasg.utils import swagger_auto_schema
 
+from time import sleep
 from . import serializers
 from .tasks import upload_file
 from .renderers import UserJSONRenderer
@@ -18,6 +19,7 @@ class FileUploadView(APIView):
         serializer = FileUploadSerializer(data=request.data)
         if serializer.is_valid():
             file = serializer.save()
+            sleep(7)
             upload_file.delay(file.id) 
             return Response(serializer.data, status=201)
         else:
