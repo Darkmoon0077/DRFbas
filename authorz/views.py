@@ -12,6 +12,17 @@ from .renderers import UserJSONRenderer
 from .serializers import RegistrationSerializer, LoginSerializer, PostSerializer, FileUploadSerializer
 from .models import Post, User
 from .permissions import IsOwnerOrReadOnly
+
+class FileUploadView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = FileUploadSerializer(data=request.data)
+        if serializer.is_valid():
+            file = serializer.save()
+            upload_file.delay(file.id) 
+            return Response(serializer.data, status=201)
+        else:
+            return Response(serializer.errors, status=400)
+
 class LoginAPIView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
@@ -52,13 +63,3 @@ class PostDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = serializers.PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
-
-class FileUploadView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = FileUploadSerializer(data=request.data)
-        if serializer.is_valid():
-            file = serializer.save()
-            upload_file.delay(file.id) # Trigger the task asynchronously
-            return Response(serializer.data, status=201)
-        else:
-            return Response(serializer.errors, status=400)
