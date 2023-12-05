@@ -7,8 +7,9 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_yasg.utils import swagger_auto_schema
 
 from . import serializers
+from .tasks import upload_file
 from .renderers import UserJSONRenderer
-from .serializers import RegistrationSerializer, LoginSerializer, PostSerializer
+from .serializers import RegistrationSerializer, LoginSerializer, PostSerializer, FileUploadSerializer
 from .models import Post, User
 from .permissions import IsOwnerOrReadOnly
 class LoginAPIView(APIView):
@@ -51,3 +52,13 @@ class PostDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = serializers.PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+class FileUploadView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = FileUploadSerializer(data=request.data)
+        if serializer.is_valid():
+            file = serializer.save()
+            upload_file.delay(file.id) # Trigger the task asynchronously
+            return Response(serializer.data, status=201)
+        else:
+            return Response(serializer.errors, status=400)

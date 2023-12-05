@@ -74,3 +74,10 @@ class Post(models.Model):
 
     class Meta:
         ordering = ['created']
+
+class File(models.Model):
+    file = models.ImageField(upload_to='files/')
+
+
+
+

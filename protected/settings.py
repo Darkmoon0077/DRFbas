@@ -15,10 +15,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'ins',
     'authorz',
     'rest_framework_simplejwt',
     'drf_yasg',
+    'celery',
+    'redis',
 ]
 
 MIDDLEWARE = [
@@ -78,6 +79,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
@@ -107,3 +109,6 @@ SWAGGER_SETTINGS = {
         }
     },
 }
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+BROKER_URL = 'redis://localhost:6379/0'

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Post
+from .models import User, Post, File
 from django.contrib.auth import authenticate
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -61,3 +61,10 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id', 'title', 'body', 'owner']
+
+class FileUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = File
+        fields = ['file']
+
+
