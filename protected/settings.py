@@ -21,6 +21,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     'celery',
     'redis',
+    'storages',
+    'psycopg2',
 ]
 
 MIDDLEWARE = [
@@ -117,3 +119,5 @@ app = Celery('protected')
 
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

@@ -1,29 +1,66 @@
-from rest_framework import status, generics, permissions
+from rest_framework import status, generics, permissions, viewsets
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_yasg.utils import swagger_auto_schema
+from django.http import HttpResponse
 
 from time import sleep
 from . import serializers
 from .tasks import upload_file
 from .renderers import UserJSONRenderer
 from .serializers import RegistrationSerializer, LoginSerializer, PostSerializer, FileUploadSerializer
-from .models import Post, User
+from .serializers import UploadSerializer, ImgSerializer
+from .models import Post, Img
 from .permissions import IsOwnerOrReadOnly
 
-class FileUploadView(APIView):
+class ImgViewSet(viewsets.ModelViewSet):
+    queryset = Img.objects.all()
+    serializer_class = ImgSerializer
     def post(self, request, *args, **kwargs):
-        serializer = FileUploadSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            file = serializer.save()
-            sleep(7)
-            upload_file.delay(file.id) 
-            return Response(serializer.data, status=201)
-        else:
-            return Response(serializer.errors, status=400)
+            serializer.save()
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+        
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+class ImageRetrieveView(generics.RetrieveAPIView):
+    queryset = Img.objects.all()
+    serializer_class = ImgSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        image_data = serializer.data['profile_picture']
+        return HttpResponse(image_data, content_type='image/jpeg')
+
+class FileUploadAPIView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+    serializer_class = UploadSerializer
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+        
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 class LoginAPIView(APIView):
     permission_classes = (AllowAny,)

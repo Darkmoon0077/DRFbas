@@ -1,6 +1,12 @@
 from rest_framework import serializers
-from .models import User, Post, File
+from .models import User, Post, File, UploadedFile, Img
 from django.contrib.auth import authenticate
+
+class ImgSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Img
+        fields = ['profile_picture']
+
 
 class RegistrationSerializer(serializers.ModelSerializer):
     """ Сериализация регистрации пользователя и создания нового. """
@@ -67,4 +73,8 @@ class FileUploadSerializer(serializers.ModelSerializer):
         model = File
         fields = ['file']
 
+class UploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadedFile
+        fields = ('file', 'uploaded_on',)
 

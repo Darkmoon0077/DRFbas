@@ -4,8 +4,16 @@ from django.conf import settings
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, PermissionsMixin)
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import models
-from rest_framework import status
-from rest_framework.response import Response
+
+class Img(models.Model):
+    profile_picture = models.BinaryField()
+
+class UploadedFile(models.Model):
+    file = models.FileField()
+    uploaded_on = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.uploaded_on.date()
 
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None):
