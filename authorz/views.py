@@ -13,36 +13,10 @@ from . import serializers
 from .tasks import upload_file
 from .renderers import UserJSONRenderer
 from .serializers import RegistrationSerializer, LoginSerializer, PostSerializer, FileUploadSerializer
-from .serializers import UploadSerializer, ImgSerializer
-from .models import Post, Img
+from .serializers import UploadSerializer
+from .models import Post
 from .permissions import IsOwnerOrReadOnly
 
-class ImgViewSet(viewsets.ModelViewSet):
-    queryset = Img.objects.all()
-    serializer_class = ImgSerializer
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED
-            )
-        
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-class ImageRetrieveView(generics.RetrieveAPIView):
-    queryset = Img.objects.all()
-    serializer_class = ImgSerializer
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        image_data = serializer.data['profile_picture']
-        return HttpResponse(image_data, content_type='image/jpeg')
 
 class FileUploadAPIView(APIView):
     parser_classes = (MultiPartParser, FormParser)

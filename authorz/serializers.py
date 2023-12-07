@@ -1,11 +1,7 @@
 from rest_framework import serializers
-from .models import User, Post, File, UploadedFile, Img
+from .models import User, Post, File, UploadedFile
 from django.contrib.auth import authenticate
 
-class ImgSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Img
-        fields = ['profile_picture']
 
 
 class RegistrationSerializer(serializers.ModelSerializer):

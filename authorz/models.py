@@ -5,9 +5,6 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, Permi
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import models
 
-class Img(models.Model):
-    profile_picture = models.BinaryField()
-
 class UploadedFile(models.Model):
     file = models.FileField()
     uploaded_on = models.DateTimeField(auto_now_add=True)
