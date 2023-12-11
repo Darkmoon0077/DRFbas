@@ -1,0 +1,19 @@
+{% extends 'main.html' %}
+
+
+
+{% block content %}
+
+        <img src={{ Post.thumbnail.url }} alt={{ Post.title }} width="250"/>
+
+        <strong>{{ Post.title }}</strong>
+
+        <p>{{ Post.body }}</p>
+
+        <small>{{ Post.created }}</small>
+
+        <hr>
+
+        <span>{{ Post.category.title }}</span>
+
+{% endblock %}
