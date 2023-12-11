@@ -1,0 +1,38 @@
+    serializer_class = PostSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+
+
+    @pytest.mark.django_db
+def test_post():
+    client = APIClient()
+    client.post('/api/users/',data={'user': {
+            'email': 'mercedes@gmail.com',
+            'username': 'LewisHamilton',
+            'password': 'Mercedes'}
+    }, format = 'json')
+    url = reverse('authorz:posts')
+    payload = {
+        'title': 'fuck',
+        'body': 'you'}
+    response = client.post(url, data=payload, format = 'json')
+    assert response.status_code == status.HTTP_201_CREATED
+
+
+    @pytest.mark.django_db
+def test_post_list_authenticated(user):
+    client = APIClient()
+    user= client.post('/api/users/',data={'user': {
+            'email': 'mercedes@gmail.com',
+            'username': 'LewisHamilton',
+            'password': 'Mercedes'}
+    }, format = 'json')
+    url = reverse('authorz:posts')
+    token = AccessToken.for_user(user)
+    client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+    Post.objects.create(title='Test Post', body='This is a test post.', owner=user)
+    response = client.get(url)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.data) == 1

@@ -1,11 +1,19 @@
-import jwt
 from datetime import datetime, timedelta
-from django.conf import settings
+from django.db import models
 from django.core.validators import FileExtensionValidator
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, PermissionsMixin)
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.db import models
-from django.urls import reverse
+from faker import Faker
+
+fake = Faker()
+
+class F1Driver(models.Model):
+    name = models.CharField(max_length=50, default=fake.name)
+    team = models.CharField(max_length=50, default=fake.random_element(elements=('Mercedes', 'Ferrari', 'Red Bull')))
+    country = models.CharField(max_length=50, default=fake.country)
+    age = models.PositiveIntegerField(default=fake.random_int(min=18, max=45))
+    podiums = models.PositiveIntegerField(default=fake.random_int(min=0, max=100))
+    championships = models.PositiveIntegerField(default=fake.random_int(min=0, max=5))
 
 class UploadedFile(models.Model):
     file = models.FileField()

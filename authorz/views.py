@@ -1,4 +1,4 @@
-from rest_framework import status, generics, permissions, viewsets
+from rest_framework import status, generics, permissions
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -6,25 +6,38 @@ from rest_framework.views import APIView
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_yasg.utils import swagger_auto_schema
-from django.contrib.messages.views import SuccessMessageMixin
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, redirect
-from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.views.generic import ListView, DetailView
 
 from . import serializers
-from .forms import FeedbackCreateForm, ContactForm
-from .models import Post, Feedback
+from .forms import FeedbackCreateForm
+from .models import Post, Feedback, F1Driver
 from .permissions import IsOwnerOrReadOnly
 from .renderers import UserJSONRenderer
-from .serializers import RegistrationSerializer, LoginSerializer, PostSerializer
+from .serializers import RegistrationSerializer, LoginSerializer, PostSerializer, F1DriverSerializer
 from .serializers import UploadSerializer
 from .services.email import send_contact_email_message
 from .services.utils import get_client_ip
-from .tasks import keksend, brend
-from django.conf.global_settings import EMAIL_HOST_USER
+from .tasks import brend
 from django.views.decorators.csrf import csrf_exempt
-from django.core.mail import send_mail, BadHeaderError
+
+class F1DriverCreateView(APIView):
+    """create view"""
+    def post(self, request):
+        f1driver = F1Driver.objects.create()
+        serializer = F1DriverSerializer(f1driver)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+class F1DriverList(generics.ListAPIView):
+    """get view"""
+    queryset = F1Driver.objects.all()
+    serializer_class = F1DriverSerializer
+
+class F1DriverUpdateView(generics.UpdateAPIView):
+    """update view"""
+    queryset = F1Driver.objects.all()
+    serializer_class = F1DriverSerializer
 
 @csrf_exempt
 def skend(request):
@@ -34,35 +47,8 @@ def skend(request):
     else:
         return HttpResponse('Invalid request method')
 
-@csrf_exempt
-def send_mail_view(request):
-    if request.method == 'POST':
-        try:
-            send_mail('JJJ', 'kkk', 'darkmoon0077@gmail.com', ['Darkmoon077@yandex.kz', 'aidaraimbekova99@gmail.com'], fail_silently=False)
-            return HttpResponse('Email sent successfully!')
-        except Exception as e:  
-            return HttpResponse('Email wasnt sent successfully!')
-    else: return HttpResponse('Email wasnt sent successfully!')
-
 def index(request):
     return render(request, 'index.html')
-
-def contact_view(request):
-    if request.method == 'GET':
-        form = ContactForm()
-    elif request.method == 'POST':
-        form = ContactForm(request.POST)
-        if form.is_valid():
-            # Assuming you only pass the relevant form data to the task
-            keksend.delay(form.cleaned_data)
-            return HttpResponse("Task started successfully.")
-        else:
-            return HttpResponse("Form is not valid.")
-    else:
-        return HttpResponse('Неверный запрос.')
-
-def success_view(request):
-    return HttpResponse('Приняли! Спасибо за вашу заявку.')
 
 class PostListView(ListView):
     model = Post
