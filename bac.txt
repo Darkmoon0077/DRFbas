@@ -36,3 +36,23 @@ def test_post_list_authenticated(user):
 
     assert response.status_code == status.HTTP_200_OK
     assert len(response.data) == 1
+
+class NewLogView(APIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = LoginSerializer
+    @swagger_auto_schema(request_body=LoginSerializer)
+    def posta(self, data1):
+        user = data1.get('user', {})
+        self._user_data = user
+    def post(self, request):
+        user = self.posta(request.data)
+        serializer = self.serializer_class(data=user)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    if request.user.is_authenticated:
+            date_pass = Profile.objects.get(user=request.user.id).date_pass
+            if date.today() - date_pass > timedelta(days=90):
+                return HttpResponseRedirect(reverse_lazy('account_change_password'))

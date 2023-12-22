@@ -7,12 +7,14 @@ from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_yasg.utils import swagger_auto_schema
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.contrib.auth.views import LoginView, LogoutView
+from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView
 
+
 from . import serializers
-from .forms import FeedbackCreateForm
-from .models import Post, Feedback, F1Driver
+from .forms import FeedbackCreateForm, LogForm
+from .models import Post, Feedback, F1Driver, User
 from .permissions import IsOwnerOrReadOnly
 from .renderers import UserJSONRenderer
 from .serializers import RegistrationSerializer, LoginSerializer, PostSerializer, F1DriverSerializer
@@ -21,6 +23,52 @@ from .services.email import send_contact_email_message
 from .services.utils import get_client_ip
 from .tasks import brend
 from django.views.decorators.csrf import csrf_exempt
+
+
+
+def TestView(request):
+    return render(request, 'authorz/login.html')
+    
+
+class NewLogView(APIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = LoginSerializer
+    @swagger_auto_schema(request_body=LoginSerializer)
+    def get(self, request, *args, **kwargs):
+        form = LogForm()
+        return render(request, 'authorz/login.html', {'form': form})
+    def post(self, request, *args, **kwargs):
+        form = LogForm(request.POST)
+        print(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+            user = {
+                    "email": email,
+                    "password": password
+                }
+            print(user)
+            serializer = self.serializer_class(data=user)
+            serializer.is_valid(raise_exception=True)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ResetPass(LoginView):
+    template_name = 'authorz/reset.html'
+class CustomLoginView(LoginView):
+    template_name = 'authorz/login.html'
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = LoginSerializer
+    def post(self, request):
+        user = request.data.get('user', {})
+        serializer = self.serializer_class(data=user)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    # Additional logic or customizations can be added here
+
 
 class F1DriverCreateView(APIView):
     """create view"""
@@ -47,8 +95,8 @@ def skend(request):
     else:
         return HttpResponse('Invalid request method')
 
-def index(request):
-    return render(request, 'index.html')
+class Loggedin(LoginView):
+    template_name = 'index.html'
 
 class PostListView(ListView):
     model = Post
@@ -82,9 +130,10 @@ class LoginAPIView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
-    @swagger_auto_schema(request_body=RegistrationSerializer)
+    @swagger_auto_schema(request_body=LoginSerializer)
     def post(self, request):
         user = request.data.get('user', {})
+        print(user)
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

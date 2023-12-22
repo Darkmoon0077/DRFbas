@@ -14,3 +14,8 @@ class ContactForm(forms.Form):
     from_email = forms.EmailField(label='Email', required=True)
     subject = forms.CharField(label='Тема', required=True)
     message = forms.CharField(label='Сообщение', widget=forms.Textarea, required=True)
+
+class LogForm(forms.Form):
+    email = forms.EmailField()
+    password = forms.CharField(widget=forms.PasswordInput)
+

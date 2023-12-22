@@ -1,0 +1,15 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+    <form action="/reset-password" method="post">
+        <h2>Password Reset</h2>
+
+     <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="new-password">New Password:</label>
+        <input type="password" id="new-password" name="new-password" required>
+
+        <button type="submit">Reset Password</button>
+    </form>
+{% endblock %}
