@@ -5,15 +5,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from datetime import timedelta
 from drf_yasg.utils import swagger_auto_schema
 from django.http import HttpResponse
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render, redirect
+from django.urls import reverse
+from django.utils import timezone
 from django.views.generic import ListView, DetailView
 
 
 from . import serializers
-from .forms import FeedbackCreateForm, LogForm
+from .forms import FeedbackCreateForm, LogForm, PassForm
 from .models import Post, Feedback, F1Driver, User
 from .permissions import IsOwnerOrReadOnly
 from .renderers import UserJSONRenderer
@@ -48,15 +51,60 @@ class NewLogView(APIView):
                     "email": email,
                     "password": password
                 }
-            print(user)
+            serializer = self.serializer_class(data=user)
+            serializer.is_valid(raise_exception=True)
+            if self.password_check(email):
+                return redirect(reverse('authorz:reset'))
+            return Response(serializer.data, status=status.HTTP_200_OK)
+    def password_check(self, email):
+        try:
+            user = User.objects.get(email=email)
+            if user.last_password_update:
+                time_difference = timezone.now() - user.last_password_update
+                return time_difference > timedelta(minutes=2)
+            return False
+        except User.DoesNotExist:
+            return False
+
+
+def ResetPass(request):
+    return render(request, 'authorz/reset.html')
+
+class ResetView(APIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = LoginSerializer
+    @swagger_auto_schema(request_body=LoginSerializer)
+    def get(self, request, *args, **kwargs):
+        form = LogForm()
+        return render(request, 'authorz/reset.html', {'form': form})
+    def post(self, request, *args, **kwargs):
+        form = PassForm(request.POST)
+        print(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+            npassword = form.cleaned_data['npassword']
+            rpassword = form.cleaned_data['rpassword']
+            user = {
+                    "email": email,
+                    "password": password
+                }
+            serializer = self.serializer_class(data=user)
+            serializer.is_valid(raise_exception=True)
+            if npassword != rpassword:
+                return Response({'error': 'Passwords do not match'}, status=status.HTTP_400_BAD_REQUEST)
+            user = User.objects.get(email=email)
+            user.update_password(npassword)
+            user = {
+                    "email": email,
+                    "password": npassword
+                }
             serializer = self.serializer_class(data=user)
             serializer.is_valid(raise_exception=True)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-class ResetPass(LoginView):
-    template_name = 'authorz/reset.html'
 class CustomLoginView(LoginView):
     template_name = 'authorz/login.html'
     permission_classes = (AllowAny,)

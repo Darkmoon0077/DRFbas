@@ -6,7 +6,8 @@ app_name = 'authorz'
 urlpatterns = [
     path('users/', views.RegistrationAPIView.as_view()),
     path('users/login/', views.LoginAPIView.as_view(), name = 'login'),
-    path('reset/', views.ResetPass.as_view(), name='reset'),
+    path('reset/', views.ResetPass, name='reset'),
+    path('reset/v/', views.ResetView.as_view(), name='resetV'),
     path('a/', views.TestView, name= 'exp'),
     path('a/login/', views.NewLogView.as_view(), name= 'exper'),
     path('posts/', views.PostList.as_view(), name = 'posts'),

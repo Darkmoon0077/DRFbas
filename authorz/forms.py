@@ -19,3 +19,8 @@ class LogForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput)
 
+class PassForm(forms.Form):
+    email = forms.EmailField()
+    password = forms.CharField(widget=forms.PasswordInput)
+    npassword = forms.CharField(label='New Password', required=True, widget=forms.PasswordInput)
+    rpassword = forms.CharField(label='Repeat the Password', required=True, widget=forms.PasswordInput)

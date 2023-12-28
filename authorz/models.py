@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 from django.db import models
 from django.core.validators import FileExtensionValidator
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, PermissionsMixin)
+from django.utils import timezone
 from rest_framework_simplejwt.tokens import RefreshToken
 from faker import Faker
 
@@ -47,11 +49,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    last_password_update = models.DateTimeField(null=True, blank=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     objects = UserManager()
     def __str__(self):
         return self.email
+    def update_password(self, new_password):
+        self.password = make_password(new_password)
+        self.last_password_update = timezone.now()
+        self.save()
     @property
     def token(self):
         return self._generate_jwt_token()

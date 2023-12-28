@@ -1,15 +1,15 @@
 {% extends 'main.html' %}
 {% load static %}
 {% block content %}
-    <form action="/reset-password" method="post">
-        <h2>Password Reset</h2>
-
-     <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-
-        <label for="new-password">New Password:</label>
-        <input type="password" id="new-password" name="new-password" required>
-
-        <button type="submit">Reset Password</button>
+<div class="container">
+    <h1>Resetting Password</h1>
+    <form method="post" action="v/">
+        {% csrf_token %}
+        <p>Email:<br> <input name="email" type="email" /></p>
+        <p>Password:<br> <input name="password" type="password"/></p>
+        <p>New Password:<br> <input name="npassword" type="password"/></p>
+        <p>Repeat the new Password:<br> <input name="rpassword" type="password"/></p>
+        <button type="submit" value="Send">Login</button>
     </form>
+</div>
 {% endblock %}
