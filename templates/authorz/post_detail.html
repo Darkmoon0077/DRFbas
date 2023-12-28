@@ -1,15 +1,17 @@
-{% extends 'main.html' %}
+{% extends 'post.html' %}
 
 
 
 {% block content %}
 
-        <img src={{ Post.thumbnail.url }} alt={{ Post.title }} width="250"/>
-
+        {% if Post.thumbnail and Post.thumbnail.url %}
+                <img src="{{ Post.thumbnail.url }}" alt="{{ Post.title }}" width="250"/>
+        {% endif %}
         <strong>{{ Post.title }}</strong>
 
         <p>{{ Post.body }}</p>
 
+        <p>{{ Post.owner }}</p>
         <small>{{ Post.created }}</small>
 
         <hr>

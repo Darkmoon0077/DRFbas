@@ -37,7 +37,6 @@ class NewLogView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
-    @swagger_auto_schema(request_body=LoginSerializer)
     def get(self, request, *args, **kwargs):
         form = LogForm()
         return render(request, 'authorz/login.html', {'form': form})
@@ -61,7 +60,7 @@ class NewLogView(APIView):
             user = User.objects.get(email=email)
             if user.last_password_update:
                 time_difference = timezone.now() - user.last_password_update
-                return time_difference > timedelta(minutes=2)
+                return time_difference > timedelta(days=20)
             return False
         except User.DoesNotExist:
             return False
@@ -74,7 +73,6 @@ class ResetView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
-    @swagger_auto_schema(request_body=LoginSerializer)
     def get(self, request, *args, **kwargs):
         form = LogForm()
         return render(request, 'authorz/reset.html', {'form': form})

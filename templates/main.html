@@ -6,13 +6,20 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            text-align: center; /* Center-align text in the header */
+ /* Add padding to the top and bottom of the header */
+            background-color: #333; /* Example background color for the header */
+
+        }
+        main {
+            font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            height: 85vh;
         }
 
         form {
@@ -46,10 +53,54 @@
         button:hover {
             background-color: #0056b3;
         }
+        nav {
+            background-color: rgb(110, 104, 101); /* Background color for the navigation bar */
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 50px; /* Adjust the height of the navigation bar as needed */
+        }
+
+        .nav-item {
+            margin: 0 15px; /* Adjust the spacing between navigation items */
+        }
+
+        .nav-item a {
+            color: #fff; /* Text color for the navigation links */
+            text-decoration: none; /* Remove underlines from links */
+            font-weight: bold; /* Optionally set font weight */
+        }
+        header {
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            text-align: center; /* Center-align text in the header */
+            padding: 0px 0; /* Add padding to the top and bottom of the header */
+            background-color: #333; /* Example background color for the header */
+            color: #fff; /* Example text color for the header */
+        }
     </style>
+    
 </head>
-<body>
-{% block content %}
-{% endblock %}
-</body>
+    <body>
+        <header>
+            <h1>{% block header %}LogIn{% endblock %}</h1>
+            <!-- Add any other header content here -->
+        </header>
+        <nav>
+            <div class="nav-container">
+                <div class="nav-item"><a href="/api/post/">Posts</a></div>
+                <div class="nav-item"><a href="/api/ind/">Index</a></div>
+                <div class="nav-item"><a href="/contact">Contact</a></div>
+                <!-- Add more navigation items as needed -->
+            </div>
+        </nav>
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+    </body>
 </html>

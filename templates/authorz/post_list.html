@@ -1,23 +1,22 @@
-{% extends 'main.html' %}
-
+{% extends 'post.html' %}
 
 
 {% block content %}
 
     {% for Post in posts %}
+        <div class="post-container">
+            <strong>{{ Post.title }}</strong>
 
-        <img src={{ Post.thumbnail.url }} alt={{ Post.title }} width="150"/>
+            {% if Post.thumbnail and Post.thumbnail.url %}
+                <img src="{{ Post.thumbnail.url }}" alt="{{ Post.title }}" width="250"/>
+            {% endif %}
 
-        <strong>{{ Post.title }}</strong>
-
-        <p>{{ Post.owner }}</p>
-
-        <small>{{ Post.created }}</small>
-        <p>{{Post.body}}</p>
-        <hr>
-
-        <span>{{ Post.category.title }}</span>
-
+            <p>{{ Post.body }}</p>
+            <p>{{ Post.owner }}</p>
+            <small>{{ Post.created }}</small>
+            <hr>
+            <span>{{ Post.category.title }}</span>
+        </div>
     {% endfor %}
 
 {% endblock %}
