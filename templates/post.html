@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Posts</title>
-    <!-- Add your CSS links or stylesheets here -->
+    <title>{{title}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- INCLUDE CSS -->
+    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" type="text/css" rel="stylesheet">
     <style>
         header {
             text-align: center; /* Center-align text in the header */
@@ -72,22 +75,26 @@
     <nav>
         <div class="nav-container">
             <div class="nav-item"><a href="/api/a/">LogIn</a></div>
-            <div class="nav-item"><a href="/api/ind/">Index</a></div>
+            <div class="nav-item"><a href="/api/posta/">Index</a></div>
             <div class="nav-item"><a href="/contact">Contact</a></div>
             <!-- Add more navigation items as needed -->
         </div>
     </nav>
-    
-
     <main>
-        {% block content %}{% endblock %}
+        <div class="container">
+
+            {% block content %}
+    
+    
+    
+            {% endblock %}
+    
+        </div>
+    
+    <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     </main>
-
     <footer>
-        <!-- Add your footer content here -->
     </footer>
-
-    <!-- Add your JavaScript scripts or links here -->
 
 </body>
 </html>

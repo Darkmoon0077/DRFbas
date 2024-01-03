@@ -1,0 +1,27 @@
+{% extends 'index.html' %}
+
+
+{% block content %}
+
+    {% for Post in posts %}
+    <div class="card mb-3">
+        <div class="row">
+            <div class="col-4">
+                {% if Post.thumbnail and Post.thumbnail.url %}
+                <img src="{{ Post.thumbnail.url }}" class="card-img-top" alt="{{ Post.title }}">
+            {% endif %}
+                
+            </div>
+            <div class="col-8">
+                <div class="card-body">
+                    <h5 class="card-title">{{ Post.title }}</h5>
+                    <div class="card-subtitle">{{ Post.owner }}</div>
+                    <p class="card-text">{{ Post.body }}</p>
+                    <a href="{{ Post.get_absolute_url }}">Подробнее</a>
+                  </div>
+                </div>
+            </div>
+      </div>
+    {% endfor %}
+
+{% endblock %}

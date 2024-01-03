@@ -14,8 +14,9 @@
             <p>{{ Post.body }}</p>
             <p>{{ Post.owner }}</p>
             <small>{{ Post.created }}</small>
+
+            <a href="{{ Post.get_absolute_url }}">Подробнее</a>
             <hr>
-            <span>{{ Post.category.title }}</span>
         </div>
     {% endfor %}
 

@@ -7,17 +7,21 @@ from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from datetime import timedelta
 from drf_yasg.utils import swagger_auto_schema
-from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.http import HttpResponse, JsonResponse
+from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render, redirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.views.generic import ListView, DetailView
+from django.utils.decorators import method_decorator
+from django.views.generic import ListView, DetailView, View, UpdateView, CreateView
 
 
 from . import serializers
-from .forms import FeedbackCreateForm, LogForm, PassForm
-from .models import Post, Feedback, F1Driver, User
+from .forms import FeedbackCreateForm, LogForm, PassForm, ProfileUpdateForm, UserUpdateForm, UserRegisterForm, UserLoginForm
+from .models import Post, Feedback, F1Driver, User, Profile
 from .permissions import IsOwnerOrReadOnly
 from .renderers import UserJSONRenderer
 from .serializers import RegistrationSerializer, LoginSerializer, PostSerializer, F1DriverSerializer
@@ -28,11 +32,71 @@ from .tasks import brend
 from django.views.decorators.csrf import csrf_exempt
 
 
+@method_decorator(login_required, name='dispatch')
+class ProfileFollowingCreateView(View):
+    model = Profile
+    def is_ajax(self):
+        return self.request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    def post(self, request, slug):
+        user = self.model.objects.get(slug=slug)
+        profile = request.user.profile
+        if profile in user.followers.all():
+            user.followers.remove(profile)
+            message = f'Подписаться на {user}'
+            status = False
+        else:
+            user.followers.add(profile)
+            message = f'Отписаться от {user}'
+            status = True
+        data = {
+            'username': profile.user.username,
+            'get_absolute_url': profile.get_absolute_url(),
+            'slug': profile.slug,
+            'avatar': profile.get_avatar,
+            'message': message,
+            'status': status,
+        }
+        return JsonResponse(data, status=200)
+
+class ProfileDetailView(DetailView):
+    model = Profile
+    context_object_name = 'profile'
+    template_name = 'authorz/profile_detail.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Страница пользователя: {self.object.user.username}'
+        return context
+
+class ProfileUpdateView(UpdateView):
+    model = Profile
+    form_class = ProfileUpdateForm
+    template_name = 'authorz/profile_edit.html'
+    def get_object(self, queryset=None):
+        return self.request.user.profile
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Редактирование профиля пользователя: {self.request.user.username}'
+        if self.request.POST:
+            context['user_form'] = UserUpdateForm(self.request.POST, instance=self.request.user)
+        else:
+            context['user_form'] = UserUpdateForm(instance=self.request.user)
+        return context
+    def form_valid(self, form):
+        context = self.get_context_data()
+        user_form = context['user_form']
+        with transaction.atomic():
+            if all([form.is_valid(), user_form.is_valid()]):
+                user_form.save()
+                form.save()
+            else:
+                context.update({'user_form': user_form})
+                return self.render_to_response(context)
+        return super(ProfileUpdateView, self).form_valid(form)
+    def get_success_url(self):
+        return reverse_lazy('authorz:profile_detail', kwargs={'slug': self.object.slug})
 
 def TestView(request):
     return render(request, 'authorz/login.html')
-    
-
 class NewLogView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
@@ -68,7 +132,6 @@ class NewLogView(APIView):
 
 def ResetPass(request):
     return render(request, 'authorz/reset.html')
-
 class ResetView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
@@ -113,8 +176,29 @@ class CustomLoginView(LoginView):
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    # Additional logic or customizations can be added here
 
+class UserRegisterView(SuccessMessageMixin, CreateView):
+    form_class = UserRegisterForm
+    success_url = reverse_lazy('authorz:fancy_post')
+    template_name = 'authorz/user_register.html'
+    success_message = 'Вы успешно зарегистрировались. Можете войти на сайт!'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Регистрация на сайте'
+        return context
+
+class UserLoginView(SuccessMessageMixin, LoginView):
+    form_class = UserLoginForm
+    template_name = 'authorz/user_login.html'
+    next_page = 'authorz:fancy_post'
+    success_message = 'Добро пожаловать на сайт!'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Авторизация на сайте'
+        return context
+
+class UserLogoutView(LogoutView):
+    next_page = 'authorz:fancy_post'
 
 class F1DriverCreateView(APIView):
     """create view"""
@@ -143,6 +227,15 @@ def skend(request):
 
 class Loggedin(LoginView):
     template_name = 'index.html'
+
+class AListView(ListView):
+    model = Post
+    template_name = 'list.html'
+    context_object_name = 'posts'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Post List' 
+        return context
 
 class PostListView(ListView):
     model = Post
