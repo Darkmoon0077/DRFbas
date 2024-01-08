@@ -3,69 +3,20 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import FileExtensionValidator
+from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, PermissionsMixin)
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import RefreshToken
-from faker import Faker
 from .services.utils import unique_slugify
 
-
-
-
-fake = Faker()
-
-class F1Driver(models.Model):
-    name = models.CharField(max_length=50, default=fake.name)
-    team = models.CharField(max_length=50, default=fake.random_element(elements=('Mercedes', 'Ferrari', 'Red Bull')))
-    country = models.CharField(max_length=50, default=fake.country)
-    age = models.PositiveIntegerField(default=fake.random_int(min=18, max=45))
-    podiums = models.PositiveIntegerField(default=fake.random_int(min=0, max=100))
-    championships = models.PositiveIntegerField(default=fake.random_int(min=0, max=5))
 
 class UploadedFile(models.Model):
     file = models.FileField()
     uploaded_on = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.uploaded_on.date()
-
-class Profile(models.Model):
-    user = models.OneToOneField('authorz.User', on_delete=models.CASCADE)
-    slug = models.SlugField(verbose_name='URL', max_length=255, blank=True, unique=True)
-    following = models.ManyToManyField('self', related_name='followers', symmetrical=False, blank=True)
-    avatar = models.ImageField(
-        verbose_name='Аватар',
-        upload_to='images/avatars/', 
-        default='images/avatars/default.jpg',
-        blank=True,  
-        validators=[FileExtensionValidator(allowed_extensions=('png', 'jpg', 'jpeg'))])
-    bio = models.TextField(max_length=500, blank=True)
-    birth_date = models.DateField(null=True, blank=True)
-    class Meta:
-        db_table = 'app_profiles'
-        ordering = ('user',)
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = unique_slugify(self, self.user.username)
-        super().save(*args, **kwargs)
-    def __str__(self):
-        return self.user.username
-    def get_absolute_url(self):
-        return reverse('authorz:profile_detail', kwargs={'slug': self.slug})
-    @property
-    def get_avatar(self):
-        if self.avatar:
-            return self.avatar.url
-        return f'https://ui-avatars.com/api/?size=150&background=random&name={self.slug}'
-
-@receiver(post_save, sender='authorz.User')
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
-@receiver(post_save, sender='authorz.User')
-def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
 
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None):
@@ -154,5 +105,42 @@ class File(models.Model):
     file = models.ImageField(upload_to='files/')
 
 
+User = get_user_model()
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    slug = models.SlugField(verbose_name='URL', max_length=255, blank=True, unique=True)
+    following = models.ManyToManyField('self', related_name='followers', symmetrical=False, blank=True)
+    avatar = models.ImageField(
+        verbose_name='Аватар',
+        upload_to='images/avatars/', 
+        default='images/avatars/default.jpg',
+        blank=True,  
+        validators=[FileExtensionValidator(allowed_extensions=('png', 'jpg', 'jpeg'))])
+    bio = models.TextField(max_length=500, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    class Meta:
+        db_table = 'app_profiles'
+        ordering = ('user',)
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = unique_slugify(self, self.user.username)
+        super().save(*args, **kwargs)
+    def __str__(self):
+        return self.user.username
+    def get_absolute_url(self):
+        return reverse('authorz:profile_detail', kwargs={'slug': self.slug})
+    @property
+    def get_avatar(self):
+        if self.avatar:
+            return self.avatar.url
+        return f'https://ui-avatars.com/api/?size=150&background=random&name={self.slug}'
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
 
 

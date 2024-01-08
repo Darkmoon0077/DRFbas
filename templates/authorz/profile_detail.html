@@ -21,17 +21,23 @@
                             <li>Дата рождения: {{ profile.birth_date }}</li>
                             <li>О себе: {{ profile.bio }}</li>
                         </ul>
-                        {% if request.user.is_authenticated and request.user != profile.user %} {% if request.user.profile in profile.followers.all %}
-					<button class="btn btn-sm btn-danger btn-follow" data-slug="{{ profile.slug }}">
-						Отписаться от {{ profile.user.username }}
-					</button>
+                    {% if request.user.is_authenticated and request.user != profile.user %} {% if request.user.profile in profile.followers.all %}
+                    <form method="post" action="{% url 'authorz:profile_messege' profile.slug %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger btn-follow">
+                            Отписаться от {{ profile.user.username }}
+                        </button>
+                    </form>
 					{% else %}
-					<button class="btn btn-sm btn-primary btn-follow" data-slug="{{ profile.slug }}">
-						Подписаться на {{ profile.user.username }}
-					</button>
+					<form method="post" action="{% url 'authorz:profile_messege' profile.slug %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            Подписаться на {{ profile.user.username }}
+                        </button>
+                    </form>
 					{% endif %} {% elif request.user == profile.user %}
 					<a href="{% url 'authorz:profile_edit' %}" class="btn btn-sm btn-primary">Редактировать профиль</a>
-                    {% endif %}
+					{% endif %}
                     </div>
                 </div>
             </div>
@@ -40,9 +46,12 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <h6 class="card-title">
-                            Подписки
-                        </h6>
+                        <form method="post" action="{% url 'authorz:profile_following' profile.slug %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary me-2">
+                                Подписки {{ profile.following.all|length }}
+                            </button>
+                        </form>
                         <div class="card-text">
                             <div class="row">
                                 {% for following in profile.following.all %}
@@ -56,9 +65,12 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <h6 class="card-title">
-                            Подписчики
-                        </h6>
+                        <form method="post" action="{% url 'authorz:profile_followers' profile.slug %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary me-2">
+                                Подписки {{ profile.followers.all|length }}
+                            </button>
+                        </form>
                         <div class="card-text">
                             <div class="row followers-box">
                                 {% for follower in profile.followers.all %}
@@ -75,7 +87,4 @@
             </div>
         </div>    
     </div>
-{% endblock %}
-{% block script %}
-<script src="{% static 'custom/js/profile.js' %}"></script>
 {% endblock %}

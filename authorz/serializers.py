@@ -1,11 +1,6 @@
 from rest_framework import serializers
-from .models import User, Post, File, UploadedFile, F1Driver
+from .models import User, Post, File, UploadedFile
 from django.contrib.auth import authenticate
-
-class F1DriverSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = F1Driver
-        fields = '__all__'
 
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
@@ -60,4 +55,9 @@ class UploadSerializer(serializers.ModelSerializer):
     class Meta:
         model = UploadedFile
         fields = ('file', 'uploaded_on',)
+
+class SearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email')
 

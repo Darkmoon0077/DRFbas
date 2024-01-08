@@ -1,4 +1,4 @@
-from .models import Feedback, Profile, User
+from .models import Feedback, Profile, User, Post
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
@@ -64,6 +64,22 @@ class UserLoginForm(AuthenticationForm):
                 'autocomplete': 'off'
             })
 
+class PostCreateForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ('title', 'slug', 'body', 'thumbnail')
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({
+                'class': 'form-control',
+                'autocomplete': 'off'
+            })
+
+class PostUpdateForm(PostCreateForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
 
 class FeedbackCreateForm(forms.ModelForm):
     class Meta:
@@ -88,3 +104,6 @@ class PassForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput)
     npassword = forms.CharField(label='New Password', required=True, widget=forms.PasswordInput)
     rpassword = forms.CharField(label='Repeat the Password', required=True, widget=forms.PasswordInput)
+
+class SearchForm(forms.Form):
+    que = forms.CharField()

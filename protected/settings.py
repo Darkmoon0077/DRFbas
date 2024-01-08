@@ -7,7 +7,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#1z_xe-ou5%o&-&$f1$y$ya11sx*r!q!j&*#n-r!+#n40*8m_='
 DEBUG = True
 ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1']
-CSRF_TRUSTED_ORIGINS = ['http://localhost/']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -93,9 +92,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'authorz.User'
-AUTHENTICATION_BACKENDS = [
-    'authorz.backends.UserModelBackend'
-]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
