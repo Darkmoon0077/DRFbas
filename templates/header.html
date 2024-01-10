@@ -29,12 +29,13 @@
           <input class="form-control" placeholder="Search..." name='que' autocomplete="off">
         </form>
         {% if request.user.is_authenticated %}
+          <a href="/api/posta/signed/" type="button" class="btn btn-secondary me-2">Новости</a>
           <a href="{% url 'authorz:profile_detail' request.user.profile.slug %}" type="button" class="btn btn-secondary me-2"> {{ request.user.username }}</a>
           <a href="{% url 'authorz:logout' %}" type="button" class="btn btn-primary">Деавторизация</a>
         {% else %}
         <div class="text-end">
           <a href="{% url 'authorz:LogIn' %}" type="button" class="btn btn-light text-dark me-2">Авторизация</a>
-          <a href="{% url 'authorz:register' %}" type="button" class="btn btn-primary">Регистрация</a>
+          <a href="{% url 'authorz:exp' %}" type="button" class="btn btn-primary">Регистрация</a>
         </div>
         {% endif %}  
       </div>  

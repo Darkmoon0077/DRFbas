@@ -56,3 +56,18 @@ class NewLogView(APIView):
             date_pass = Profile.objects.get(user=request.user.id).date_pass
             if date.today() - date_pass > timedelta(days=90):
                 return HttpResponseRedirect(reverse_lazy('account_change_password'))
+
+{
+  "title": "GWOE",
+  "body": "This have to be a meaningful text",
+  "slug": "ASF"
+}
+
+{
+  "user": {
+    "email": "darkmoon0077@gmail.com",
+    "password": "zergling1"
+  }
+}
+Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzA0ODI0MzcwLCJpYXQiOjE3MDQ4MjA3NzAsImp0aSI6Ijc2MjA4Yzk2OGY3ZDRkZThiMDZkNDcxOTI2OGU3MGRiIiwidXNlcl9pZCI6MX0.omJAXZUR0ozPac3g9jdcKFtJg6nKoUE9SWrCbx2TRfs
+dsfaESDAS 

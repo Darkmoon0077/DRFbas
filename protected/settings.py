@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from datetime import timedelta
-from celery import Celery
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#1z_xe-ou5%o&-&$f1$y$ya11sx*r!q!j&*#n-r!+#n40*8m_='
@@ -20,11 +19,10 @@ INSTALLED_APPS = [
     'authorz.services',
     'rest_framework_simplejwt',
     'drf_yasg',
-    'celery',
-    'redis',
     'storages',
     'psycopg2',
     'pytils',
+    'PIL'
 ]
 
 MIDDLEWARE = [
@@ -114,14 +112,6 @@ SWAGGER_SETTINGS = {
         }
     },
 }
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Asia/Almaty'
 STATIC_URL = '/static/'
 STATIC_ROOT = (BASE_DIR / 'static')
 STATICFILES_DIRS = [BASE_DIR / 'templates/src']
@@ -136,9 +126,3 @@ EMAIL_HOST_PASSWORD = 'nzfj uvpb zehj pkbf'
 EMAIL_SERVER = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 EMAIL_ADMIN = ['darkmoon0077@gmail.com']
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://localhost:6379',
-    }
-}

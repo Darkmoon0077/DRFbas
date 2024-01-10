@@ -11,13 +11,6 @@ from django.utils import timezone
 from rest_framework_simplejwt.tokens import RefreshToken
 from .services.utils import unique_slugify
 
-
-class UploadedFile(models.Model):
-    file = models.FileField()
-    uploaded_on = models.DateTimeField(auto_now_add=True)
-    def __str__(self):
-        return self.uploaded_on.date()
-
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None):
         if username is None:
@@ -87,23 +80,6 @@ class Post(models.Model):
         return self.title
     def get_absolute_url(self):
         return reverse('authorz:post_detail', kwargs={'slug': self.slug}) 
-
-class Feedback(models.Model):
-    subject = models.CharField(max_length=255)
-    email = models.EmailField(max_length=255)
-    content = models.TextField(blank=True, default='')
-    created_at = models.DateTimeField(auto_now_add=True,)
-    ip_address = models.GenericIPAddressField(blank=True, null=True)
-    owner = models.ForeignKey('authorz.User', on_delete=models.CASCADE, null=True, blank=True)
-    class Meta:
-        ordering = ['-created_at']
-        db_table = 'app_feedback'
-    def __str__(self):
-        return f'Вам письмо от {self.email}' 
-
-class File(models.Model):
-    file = models.ImageField(upload_to='files/')
-
 
 User = get_user_model()
 class Profile(models.Model):

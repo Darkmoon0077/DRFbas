@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Post, File, UploadedFile
+from .models import User, Post, Profile
 from django.contrib.auth import authenticate
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -44,20 +44,22 @@ class PostSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
     class Meta:
         model = Post
-        fields = ['id', 'title', 'body', 'owner']
-
-class FileUploadSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = File
-        fields = ['file']
-
-class UploadSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UploadedFile
-        fields = ('file', 'uploaded_on',)
+        fields = ('id', 'created', 'title', 'body', 'owner', 'slug', 'thumbnail')
+        read_only_fields = ('id', 'created')
 
 class SearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email')
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'created_at']
+        read_only_fields = ('id', 'created_at' )
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['id', 'slug', 'following', 'avatar', 'bio', 'birth_date']
+    id = serializers.ReadOnlyField()

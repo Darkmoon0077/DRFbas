@@ -1,44 +1,55 @@
 from datetime import timedelta
-from typing import Any
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
-from django.contrib.messages.views import SuccessMessageMixin
-from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.db import transaction
 from django.db.models import Q
-from django.db.models.query import QuerySet
-from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.utils.decorators import method_decorator
 from django.views.generic import ListView, DetailView, View, UpdateView, CreateView, DeleteView
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from drf_yasg.views import get_schema_view
 from rest_framework import status, generics, permissions
-from rest_framework.decorators import authentication_classes, permission_classes, renderer_classes, api_view
-from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import APIView
 
 from . import serializers, forms
-from .forms import FeedbackCreateForm, LogForm, PassForm, ProfileUpdateForm, UserUpdateForm, UserRegisterForm, UserLoginForm
-from .models import Post, Feedback, User, Profile
+from .forms import LogForm, PassForm, ProfileUpdateForm, UserUpdateForm, UserLoginForm
+from .models import Post, User, Profile
 from .permissions import IsOwnerOrReadOnly
 from .renderers import UserJSONRenderer
 from .serializers import RegistrationSerializer, LoginSerializer, PostSerializer
-from .serializers import UploadSerializer
-from .services.email import send_contact_email_message
-from .services.utils import get_client_ip
-from .tasks import brend
-from django.views.decorators.csrf import csrf_exempt
+
+
 
 class ProfileFollow(LoginRequiredMixin, View):
+    model = Profile
+    renderer_classes = (UserJSONRenderer,)
+    @swagger_auto_schema(
+        operation_summary="Follow or unfollow a user profile",
+        manual_parameters=[
+            openapi.Parameter(
+                'slug',
+                openapi.IN_PATH,
+                description="User profile slug",
+                type=openapi.TYPE_STRING,
+                required=True,
+            ),
+        ],
+        responses={302: "Redirect to profile detail page"},
+    )
     def post(self, request, slug,  *args, **kwargs):
-        profile = Profile.objects.get(slug=slug)
+        if not slug:
+            return Response({'error': 'Slug is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            profile = Profile.objects.get(slug=slug)
+        except Profile.DoesNotExist:
+            return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        print(profile)
+        print(request.user.profile.following.all())
         if profile in request.user.profile.following.all():
             request.user.profile.following.remove(profile)
         elif profile not in request.user.profile.following.all():
@@ -58,11 +69,9 @@ class BasicSearch(DetailView):
         if form.is_valid():
             query = form.cleaned_data['que']
             poofs = User.objects.filter(Q(username__icontains = query) | Q(email__icontains = query))
-            print("Hello")
             if poofs.exists():
                 for user_object in poofs:
                     user_id = user_object.id
-                    print(user_id)
                     profile = Profile.objects.get(user=user_object)
                     print(f"Profile associated with user {user_id}: {profile}")
                     mata = profile.slug
@@ -73,22 +82,6 @@ class BasicSearch(DetailView):
         context = super().get_context_data(**kwargs)
         context['title'] = f'Search'
         return context        
-
-class ProfileSearchResultView(ListView):
-    model = Profile
-    context_object_name = 'profile'
-    allow_empty = True
-    template_name = 'authorz/profile_search.html'
-    def get_queryset(self):
-        query = self.request.GET.get('do')
-        print(query)
-        search_vector = SearchVector('username', weight='B') + SearchVector('email', weight='A')
-        search_query = SearchQuery(query)
-        return (self.model.objects.annotate(rank=SearchRank(search_vector, search_query)).filter(rank__gte=0.3).order_by('-rank'))
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = f'Результаты поиска: {self.request.GET.get("do")}'
-        return context
 
 class ProfileDetailView(DetailView):
     model = Profile
@@ -142,26 +135,31 @@ class ProfileUpdateView(UpdateView):
         return reverse_lazy('authorz:profile_detail', kwargs={'slug': self.object.slug})
 
 def TestView(request):
-    return render(request, 'authorz/login.html')
+    return render(request, 'authorz/user_register.html')
 class NewLogView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
-    serializer_class = LoginSerializer
+    serializer_class = RegistrationSerializer
+    @swagger_auto_schema(auto_schema=None)
     def get(self, request, *args, **kwargs):
-        form = LogForm()
-        return render(request, 'authorz/login.html', {'form': form})
+        form = forms.RegForm()
+        return render(request, 'authorz/user_register.html', {'form': form})
+    @swagger_auto_schema(auto_schema=None)
     def post(self, request, *args, **kwargs):
-        form = LogForm(request.POST)
+        form = forms.RegForm(request.POST)
         print(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
+            username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             user = {
                     "email": email,
+                    "username": username,
                     "password": password
                 }
             serializer = self.serializer_class(data=user)
             serializer.is_valid(raise_exception=True)
+            serializer.save()
             if self.password_check(email):
                 return redirect(reverse('authorz:reset'))
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -181,9 +179,11 @@ class ResetView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
+    @swagger_auto_schema(auto_schema=None)
     def get(self, request, *args, **kwargs):
         form = LogForm()
         return render(request, 'authorz/reset.html', {'form': form})
+    @swagger_auto_schema(auto_schema=None)
     def post(self, request, *args, **kwargs):
         form = PassForm(request.POST)
         print(request.POST)
@@ -211,28 +211,7 @@ class ResetView(APIView):
 
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-class CustomLoginView(LoginView):
-    template_name = 'authorz/login.html'
-    permission_classes = (AllowAny,)
-    renderer_classes = (UserJSONRenderer,)
-    serializer_class = LoginSerializer
-    def post(self, request):
-        user = request.data.get('user', {})
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-class UserRegisterView(SuccessMessageMixin, CreateView):
-    form_class = UserRegisterForm
-    success_url = reverse_lazy('authorz:fancy_post')
-    template_name = 'authorz/user_register.html'
-    success_message = 'Вы успешно зарегистрировались. Можете войти на сайт!'
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Регистрация на сайте'
-        return context
-
-class UserLoginView(SuccessMessageMixin, LoginView):
+class UserLoginView(LoginView):
     form_class = UserLoginForm
     template_name = 'authorz/user_login.html'
     next_page = 'authorz:fancy_post'
@@ -245,21 +224,36 @@ class UserLoginView(SuccessMessageMixin, LoginView):
 class UserLogoutView(LogoutView):
     next_page = 'authorz:fancy_post'
 
-@csrf_exempt
-def skend(request):
-    if request.method == 'POST':
-        brend.delay() 
-        return HttpResponse('Email sending task started successfully!')
-    else:
-        return HttpResponse('Invalid request method')
-
-class Loggedin(LoginView):
-    template_name = 'index.html'
-
-class AListView(ListView):
+class SignedListView(LoginRequiredMixin, ListView):
     model = Post
     template_name = 'list.html'
     context_object_name = 'posts'
+    authentication_classes = (JWTAuthentication)
+    login_url = 'login'
+    def get_queryset(self):
+        authors = self.request.user.profile.following.values_list('id', flat=True)
+        print(authors)
+        linked = User.objects.filter(profile__id__in=authors).values_list('id', flat=True)
+        print(linked)
+        queryset = self.model.objects.all().filter(owner_id__in=linked)
+        print(queryset)
+        return queryset
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Post List' 
+        return context
+
+class PostListView(ListView):
+    model = Post
+    permission_classes = (AllowAny,)
+    template_name = 'list.html'
+    context_object_name = 'posts'
+    @swagger_auto_schema(
+        operation_summary="Get a list of posts",
+        responses={200: openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_OBJECT))},)
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Post List' 
@@ -301,15 +295,6 @@ class PostDeleteView(DeleteView):
         context['title'] = f'Удаление статьи: {self.object.title}'
         return context
 
-class PostListView(ListView):
-    model = Post
-    template_name = 'authorz/post_list.html'
-    context_object_name = 'posts'
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Post List'
-        return context
-    
 class PostDetailView(DetailView):
     model = Post
     template_name = 'authorz/post_detail.html'
@@ -319,21 +304,28 @@ class PostDetailView(DetailView):
         context['title'] = self.object.title
         return context
 
-class FileUploadAPIView(APIView):
-    parser_classes = (MultiPartParser, FormParser)
-    serializer_class = UploadSerializer
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED  )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 class LoginAPIView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
-    @swagger_auto_schema(request_body=LoginSerializer)
+    @swagger_auto_schema(
+    operation_summary="Submit reset form",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'user': openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'email': openapi.Schema(type=openapi.TYPE_STRING),
+                    'password': openapi.Schema(type=openapi.TYPE_STRING),
+                },
+                required=['email', 'password'],
+            ),
+        },
+        required=['user'],
+    ),
+    responses={200: RegistrationSerializer()},
+    )
     def post(self, request):
         user = request.data.get('user', {})
         print(user)
@@ -343,68 +335,192 @@ class LoginAPIView(APIView):
 
 class RegistrationAPIView(APIView):
     permission_classes = (AllowAny,)
-    serializer_class = RegistrationSerializer
     renderer_classes = (UserJSONRenderer,)
-    @swagger_auto_schema(request_body=RegistrationSerializer)
+    serializer_class = RegistrationSerializer
+    @swagger_auto_schema(
+    operation_summary="Submit reset form",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'user': openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'email': openapi.Schema(type=openapi.TYPE_STRING),
+                    'username': openapi.Schema(type=openapi.TYPE_STRING),
+                    'password': openapi.Schema(type=openapi.TYPE_STRING),
+                    
+                },
+                required=['email', 'username', 'password'],
+            ),
+        },
+        required=['user'],
+    ),
+    responses={200: RegistrationSerializer()},
+    )
     def post(self, request):
         user = request.data.get('user', {})
+        print(user)
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-class PostList(generics.ListCreateAPIView):
-    serializer_class = PostSerializer
+class ProfileListAPIView(generics.ListAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = serializers.ProfileSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+
+class ProfileDetailAPIView(generics.RetrieveAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = serializers.ProfileSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+class ProfileUpdateAPIView(generics.UpdateAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = serializers.ProfileSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+class ProfileDeleteAPIView(generics.DestroyAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = serializers.ProfileSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+class ProfileFollowingAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request, pk,  *args, **kwargs):
+        profiles = User.objects.get(id=pk)
+        profile1 = profiles.id
+        profile = Profile.objects.get(user=profile1)
+        following_objects = profile.following.all()
+        u1 = profile.user.username
+        serializer = serializers.ProfileSerializer(following_objects, many=True)
+        data = {
+            "Профиль": u1,
+            "Подписки": serializer.data
+        }
+        return Response(data)
+
+class ProfileFollowersAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request, pk,  *args, **kwargs):
+        profiles = User.objects.get(id=pk)
+        profile1 = profiles.id
+        profile = Profile.objects.get(user=profile1)
+        following_objects = profile.followers.all()
+        u1 = profile.user.username
+        serializer = serializers.ProfileSerializer(following_objects, many=True)
+        data = {
+            "Профиль": u1,
+            "Подписчики": serializer.data
+        }
+        return Response(data)
+
+class PostListAPIView(generics.ListCreateAPIView):
+    serializer_class = PostSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     def get_queryset(self):
-        return Post.objects.filter(owner=self.request.user)
+        return Post.objects.all()
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-class PostDetail(generics.RetrieveUpdateDestroyAPIView):
+class PostDetailAPIView(generics.RetrieveAPIView):
     queryset = Post.objects.all()
     serializer_class = serializers.PostSerializer
+    authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
-class FeedbackCreateView(APIView):
-    model = Feedback
-    form_class = FeedbackCreateForm
-    success_message = 'Ваше письмо успешно отправлено администрации сайта'
-    extra_context = {'title': 'Контактная форма'}
-    def form_valid(self, form):
-        if form.is_valid():
-            feedback = form.save(commit=False)
-            feedback.ip_address = get_client_ip(self.request)
-            if self.request.user.is_authenticated:
-                feedback.user = self.request.user
-            send_contact_email_message(feedback.subject, feedback.email, feedback.content, feedback.ip_address, feedback.user_id)
-        return super().form_valid(form)
-    
-@method_decorator(login_required, name='dispatch')
-class ProfileFollowingCreateView(View):
-    model = Profile
-    def is_ajax(self):
-        return self.request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    def post(self, request, slug):
-        user = self.model.objects.get(slug=slug)
-        profile = request.user.profile
-        if profile in user.followers.all():
-            user.followers.remove(profile)
-            message = f'Подписаться на {user}'
-            status = False
-        else:
-            user.followers.add(profile)
-            message = f'Отписаться от {user}'
-            status = True
+class PostUpdateAPIView(generics.UpdateAPIView):
+    queryset = Post.objects.all()
+    serializer_class = serializers.PostSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+class PostDeleteAPIView(generics.DestroyAPIView):
+    queryset = Post.objects.all()
+    serializer_class = serializers.PostSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+class BasicSearchAPI(APIView):
+    serializer_class = serializers.SearchSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    @swagger_auto_schema(
+        operation_summary="Submit search form",
+        manual_parameters=[
+            openapi.Parameter(
+                name='query',
+                in_=openapi.IN_QUERY,
+                description='Search query for username or email.',
+                type=openapi.TYPE_STRING,
+                required=False,
+            ),
+        ],
+        responses={200: serializers.SearchSerializer()},
+    )
+    def get(self, request, *args, **kwargs):
+        query = self.request.query_params.get('query')
+        print(query)
+        if not query:
+            return Response({"error": "Invalid query parameter"}, status=status.HTTP_400_BAD_REQUEST)
+        poofs = User.objects.filter(Q(username__icontains = query) | Q(email__icontains = query))
+        serializer = serializers.SearchSerializer(poofs, many=True)
         data = {
-            'username': profile.user.username,
-            'get_absolute_url': profile.get_absolute_url(),
-            'slug': profile.slug,
-            'avatar': profile.get_avatar,
-            'message': message,
-            'status': status,
+            "Keyword": query,
+            "Results": serializer.data
         }
-        return JsonResponse(data, status=200)
+        return Response(data)
+
+class ProfileFollowAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    @swagger_auto_schema(
+        operation_summary="Subcscribe",
+        manual_parameters=[
+            openapi.Parameter(
+                name='user_id',
+                in_=openapi.IN_QUERY,
+                description='Write user_id of profile that you want to subscribe',
+                type=openapi.TYPE_INTEGER,
+                required=False,
+            ),
+        ],
+        responses={200: serializers.SearchSerializer()},
+    )
+    def post(self, request,  *args, **kwargs):
+        slug = self.request.query_params.get('user_id')
+        try:
+            profiles = Profile.objects.filter(user_id=slug)
+            print(profiles)
+            profile = profiles.first()
+            print(profile)
+        except Profile.DoesNotExist:
+            return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if profile in request.user.profile.following.all():
+            request.user.profile.following.remove(profile)
+            return Response("You unsubscribed")
+        elif profile not in request.user.profile.following.all():
+            request.user.profile.following.add(profile)
+            return Response("You subscribed")
+
+class SignedListAPIView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    model = Post
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    def get_queryset(self):
+        current_user = self.request.user
+        if hasattr(current_user, 'profile'):
+            authors = current_user.profile.following.values_list('id', flat=True)
+            linked = User.objects.filter(profile__id__in=authors).values_list('id', flat=True)
+            return Post.objects.filter(owner_id__in=linked)
+        return Post.objects.none()
+
+
