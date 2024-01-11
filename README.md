@@ -34,9 +34,11 @@ Before you could you need to install Docker on your OS
 4. Enter comands bellow into the terminal
    ```sh
    docker-compose up -d db
-
+   ```
+   ```sh
    docker compose build
-
+   ```
+   ```sh
    docker compose up
    ```
    This comands also download additional software automatically so it may take a while
