@@ -1,12 +1,44 @@
-### Hi there 👋, my name is Yernur
-![](https://marketplace-cdn.atlassian.com/files/f15e8f2f-b347-452e-98f7-ff9aa8e260df?fileType=image&mode=full-fit)
+<h3 align="center">Django REST FrameWork Project on PostgreSQL database</h3>
 
-I made this project to review its functionality, it allows you to run DRF project connected to PostgreSQL database, authorize new users and create, update, delete simple posts. To make it happen you need to create new user and get access token
-
-Skills: Python/Django/RestFramework/Swagger
-
-- 🔭 I’m currently working on this page. 
+## About The Project
+I made this project to review its functionality, it allows you to run DRF project connected to PostgreSQL database, authorize new users, follow/unfollow their profiles and create, update, delete simple posts. To make it happen you need to create new user and authorize with access token or fill the forms
 
 
-[<img src='https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/github.svg' alt='github' height='40'>](https://github.com/Darkmoon0077)  
+### Built With
 
+This project utilize python packages and also has an option of saving data on external database
+
+## Getting Started
+
+This is an example of how you may give instructions on setting up your project locally.
+To get a local copy up and running follow these simple example steps.
+
+### Prerequisites
+
+Before you could you need to install Docker on your OS
+
+<a href="https://docs.docker.com/desktop/install/linux-install/">Install Docker Desktop on Linux</a>
+
+<a href="https://docs.docker.com/desktop/install/mac-install/">Install Docker Desktop on Mac</a>
+
+<a href="https://docs.docker.com/desktop/install/linux-install/">Install Docker Desktop on Linux</a>
+
+### Installation
+
+1. Download archived file of source code
+
+2. Unzip folder to wherever you need
+
+3. Open terminal(or cmd on Windows) with path to unzipped files
+
+4. Enter comands bellow into the terminal
+   ```sh
+   docker-compose up -d db
+
+   docker compose build
+
+   docker compose up
+   ```
+   This comands also download additional software automatically so it may take a while
+
+ 5. Open browser and proceed to 'localhost:8000/doc/' to swagger or 'localhost:8000/api/posta/' to proceed to home page  
