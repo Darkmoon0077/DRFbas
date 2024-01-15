@@ -126,3 +126,4 @@ EMAIL_HOST_PASSWORD = 'nzfj uvpb zehj pkbf'
 EMAIL_SERVER = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 EMAIL_ADMIN = ['darkmoon0077@gmail.com']
+LOGIN_REDIRECT_URL = 'authorz:fancy_post'

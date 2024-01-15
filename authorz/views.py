@@ -355,7 +355,7 @@ class RegistrationAPIView(APIView):
         },
         required=['user'],
     ),
-    responses={200: RegistrationSerializer()},
+    responses={201: RegistrationSerializer()},
     )
     def post(self, request):
         user = request.data.get('user', {})
@@ -363,7 +363,7 @@ class RegistrationAPIView(APIView):
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class ProfileListAPIView(generics.ListAPIView):
     queryset = Profile.objects.all()
@@ -481,26 +481,10 @@ class BasicSearchAPI(APIView):
 class ProfileFollowAPIView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    @swagger_auto_schema(
-        operation_summary="Subcscribe",
-        manual_parameters=[
-            openapi.Parameter(
-                name='user_id',
-                in_=openapi.IN_QUERY,
-                description='Write user_id of profile that you want to subscribe',
-                type=openapi.TYPE_INTEGER,
-                required=False,
-            ),
-        ],
-        responses={200: serializers.SearchSerializer()},
-    )
-    def post(self, request,  *args, **kwargs):
-        slug = self.request.query_params.get('user_id')
+    def post(self, request, pk,  *args, **kwargs):
         try:
-            profiles = Profile.objects.filter(user_id=slug)
-            print(profiles)
+            profiles = Profile.objects.filter(user_id=pk)
             profile = profiles.first()
-            print(profile)
         except Profile.DoesNotExist:
             return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
         if profile in request.user.profile.following.all():
