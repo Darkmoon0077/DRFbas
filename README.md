@@ -6,7 +6,7 @@ I made this project to review its functionality, it allows you to run DRF projec
 
 ### Built With
 
-This project utilize python packages and also has an option of saving data on external database
+This project utilize python packages, django and also has an option of saving data on external database
 
 ## Getting Started
 

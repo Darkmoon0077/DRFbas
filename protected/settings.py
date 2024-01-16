@@ -22,7 +22,8 @@ INSTALLED_APPS = [
     'storages',
     'psycopg2',
     'pytils',
-    'PIL'
+    'PIL',
+    'behave_django'
 ]
 
 MIDDLEWARE = [

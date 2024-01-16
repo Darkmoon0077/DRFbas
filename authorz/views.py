@@ -162,7 +162,7 @@ class NewLogView(APIView):
             serializer.save()
             if self.password_check(email):
                 return redirect(reverse('authorz:reset'))
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return redirect(reverse('authorz:fancy_post'))
     def password_check(self, email):
         try:
             user = User.objects.get(email=email)

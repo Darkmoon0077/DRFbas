@@ -19,8 +19,8 @@
         <hr>
         {% if request.user.is_authenticated and request.user == Post.owner %}
                 <div type="row">
-                        <a href="update/" class="btn btn-sm btn-primary">Редактировать Пост</a>
-                        <a href="delete/" class="btn btn-sm btn-danger btn-follow">Удалить Пост</a>
+                        <a href="update/" class="btn btn-sm btn-primary" name="pupdate">Редактировать Пост</a>
+                        <a href="delete/" class="btn btn-sm btn-danger btn-follow" name="pdelete">Удалить Пост</a>
                 </div>
                 
         {% endif %}

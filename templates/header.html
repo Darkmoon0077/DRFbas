@@ -13,7 +13,7 @@
               </a>
             </li>
             <li>
-              <a href="{% url 'authorz:post_create' %}" class="nav-link text-white">
+              <a href="{% url 'authorz:post_create' %}" class="nav-link text-white" name="add">
                 <svg class="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#speedometer2"></use></svg>
                 Добавить статью
               </a>
@@ -30,7 +30,7 @@
         </form>
         {% if request.user.is_authenticated %}
           <a href="/api/posta/signed/" type="button" class="btn btn-secondary me-2">Новости</a>
-          <a href="{% url 'authorz:profile_detail' request.user.profile.slug %}" type="button" class="btn btn-secondary me-2"> {{ request.user.username }}</a>
+          <a href="{% url 'authorz:profile_detail' request.user.profile.slug %}" type="button" class="btn btn-secondary me-2" name="{{request.user.username}}"> {{ request.user.username }}</a>
           <a href="{% url 'authorz:logout' %}" type="button" class="btn btn-primary">Деавторизация</a>
         {% else %}
         <div class="text-end">

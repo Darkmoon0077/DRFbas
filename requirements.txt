@@ -7,3 +7,5 @@ django-storages==1.14.2
 pytils==0.4.1
 Pillow==9.3.0
 faker==20.1.0
+behave==1.2.6
+behave-django==1.4.0

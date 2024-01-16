@@ -17,7 +17,7 @@
                     <h5 class="card-title">{{ Post.title }}</h5>
                     <div class="card-subtitle">{{ Post.owner }}</div>
                     <p class="card-text">{{ Post.body }}</p>
-                    <a href="{{ Post.get_absolute_url }}">Подробнее</a>
+                    <a href="{{ Post.get_absolute_url }}" name="{{Post.slug}}"">Подробнее</a>
                   </div>
                 </div>
             </div>

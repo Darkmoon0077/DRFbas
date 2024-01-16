@@ -36,7 +36,7 @@
                         </button>
                     </form>
 					{% endif %} {% elif request.user == profile.user %}
-					<a href="{% url 'authorz:profile_edit' %}" class="btn btn-sm btn-primary">Редактировать профиль</a>
+					<a href="{% url 'authorz:profile_edit' %}" class="btn btn-sm btn-primary" name="proedit">Редактировать профиль</a>
 					{% endif %}
                     </div>
                 </div>
