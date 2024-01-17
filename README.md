@@ -1,7 +1,7 @@
 <h3 align="center">Django REST FrameWork Project on PostgreSQL database</h3>
 
 ## About The Project
-I made this project to review its functionality, it allows you to run DRF project connected to PostgreSQL database, authorize new users, follow/unfollow their profiles and create, update, delete simple posts. To make it happen you need to create new user and authorize with access token or fill the forms
+I made this project to review its functionality, it allows you to run DRF project connected to PostgreSQL database, authorize new users, follow/unfollow their profiles and create, update, delete simple posts. To make it happen you need to create new user and authorize with access token or fill the forms.
 
 
 ### Built With
@@ -43,4 +43,4 @@ Before you could you need to install Docker on your OS
    ```
    This comands also download additional software automatically so it may take a while
 
- 5. Open browser and proceed to 'localhost:8000/doc/' to swagger or 'localhost:8000/api/posta/' to proceed to home page  
+ 5. Open browser and proceed to <a href="http://localhost:8000/doc/">localhost:8000/doc/</a> to swagger or <a href="http://localhost:8000/api/posta/">localhost:8000/api/posta/</a> to proceed to home page  
