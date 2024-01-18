@@ -44,3 +44,5 @@ Before you could you need to install Docker on your OS
    This comands also download additional software automatically so it may take a while
 
  5. Open browser and proceed to <a href="http://localhost:8000/doc/">localhost:8000/doc/</a> to swagger or <a href="http://localhost:8000/api/posta/">localhost:8000/api/posta/</a> to proceed to home page  
+
+ 6. After registration using swagger and obtaininng JWT token, authorization should look like this: "Bearer < access token >
