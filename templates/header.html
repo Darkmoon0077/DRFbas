@@ -31,7 +31,7 @@
         {% if request.user.is_authenticated %}
           <a href="/api/posta/signed/" type="button" class="btn btn-secondary me-2">Новости</a>
           <a href="{% url 'authorz:profile_detail' request.user.profile.slug %}" type="button" class="btn btn-secondary me-2" name="{{request.user.username}}"> {{ request.user.username }}</a>
-          <a href="{% url 'authorz:logout' %}" type="button" class="btn btn-primary">Деавторизация</a>
+          <a href="{% url 'authorz:logout' %}" type="button" class="btn btn-primary">Выход</a>
         {% else %}
         <div class="text-end">
           <a href="{% url 'authorz:LogIn' %}" type="button" class="btn btn-light text-dark me-2">Авторизация</a>

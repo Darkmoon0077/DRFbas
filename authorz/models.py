@@ -69,7 +69,7 @@ class Post(models.Model):
     title = models.CharField(max_length=100, blank=True, default='')
     body = models.TextField(blank=True, default='')
     owner = models.ForeignKey('authorz.User', related_name='posts', on_delete=models.CASCADE)
-    slug = models.SlugField(verbose_name='URL', max_length=255, blank=True, unique=True)
+    slug = models.SlugField(verbose_name='URL', max_length=16, blank=False, unique=True)
     thumbnail = models.ImageField(
         blank=True, 
         upload_to='images/thumbnails/%Y/%m/', 
@@ -80,11 +80,15 @@ class Post(models.Model):
         return self.title
     def get_absolute_url(self):
         return reverse('authorz:post_detail', kwargs={'slug': self.slug}) 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = unique_slugify(self, self.title)
+        super().save(*args, **kwargs)
 
 User = get_user_model()
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    slug = models.SlugField(verbose_name='URL', max_length=255, blank=True, unique=True)
+    slug = models.SlugField(verbose_name='URL', max_length=16, blank=False, unique=True)
     following = models.ManyToManyField('self', related_name='followers', symmetrical=False, blank=True)
     avatar = models.ImageField(
         verbose_name='Аватар',
