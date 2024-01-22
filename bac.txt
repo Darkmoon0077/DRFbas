@@ -71,3 +71,22 @@ class NewLogView(APIView):
 }
 Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzA0ODI0MzcwLCJpYXQiOjE3MDQ4MjA3NzAsImp0aSI6Ijc2MjA4Yzk2OGY3ZDRkZThiMDZkNDcxOTI2OGU3MGRiIiwidXNlcl9pZCI6MX0.omJAXZUR0ozPac3g9jdcKFtJg6nKoUE9SWrCbx2TRfs
 dsfaESDAS 
+[
+  {
+    "model": "authorz.user",
+    "pk": 25,
+    "fields": {
+      "username": "admin",
+      "email": "admin@nimda.com",
+      "first_name": "John",
+      "last_name": "Doe",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": true,
+      "created_at": "2022-01-01T12:00:00Z",
+      "updated_at": "2022-01-01T12:00:00Z",
+      "last_password_update": null
+    }
+  }
+]
+
