@@ -1,4 +1,4 @@
-from .models import Profile, User, Post
+from .models import Profile, User, Post, ChatMessage
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 
@@ -77,3 +77,8 @@ class PassForm(forms.Form):
 
 class SearchForm(forms.Form):
     que = forms.CharField()
+
+class ChatMessageForm(forms.ModelForm):
+    class Meta:
+        model = ChatMessage
+        fields = ['content']

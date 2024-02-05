@@ -13,6 +13,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
     'rest_framework',
     'authorz',
@@ -23,8 +24,10 @@ INSTALLED_APPS = [
     'psycopg2',
     'pytils',
     'PIL',
-    'behave_django'
+    'behave_django',
+    'channels'
 ]
+ASGI_APPLICATION = 'protected.asgi.application'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -128,3 +131,8 @@ EMAIL_SERVER = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 EMAIL_ADMIN = ['darkmoon0077@gmail.com']
 LOGIN_REDIRECT_URL = 'authorz:fancy_post'
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",  # Use InMemoryChannelLayer for testing
+    },
+}

@@ -37,5 +37,5 @@ urlpatterns = [
     path('post/<int:pk>/update/', views.PostUpdateAPIView.as_view(), name='posts_update'),
     path('post/<int:pk>/delete/', views.PostDeleteAPIView.as_view(), name='posts_delete'),
     path('post/signed/', views.SignedListAPIView.as_view(), name = 'signed_posts'),
-    
+    path('chat/<slug:slug>/', views.Chat.as_view(), name='chat')
 ]

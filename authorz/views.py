@@ -1,4 +1,5 @@
 from datetime import timedelta
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.db import transaction
@@ -18,12 +19,58 @@ from rest_framework.views import APIView
 
 from . import serializers, forms
 from .forms import LogForm, PassForm, ProfileUpdateForm, UserUpdateForm, UserLoginForm
-from .models import Post, User, Profile
+from .models import Post, User, Profile, ChatMessage, ChatRoom
 from .permissions import IsOwnerOrReadOnly
 from .renderers import UserJSONRenderer
 from .serializers import RegistrationSerializer, LoginSerializer, PostSerializer
 
-
+class Chat(LoginRequiredMixin, View):
+    model = Profile
+    template_name = 'chat.html'
+    def post(self, request, slug, *args, **kwargs):
+        if not slug:
+            return render(request, 'error.html', {'error': 'Slug is required.'}, status=400)
+        try:
+            receiver_profile = Profile.objects.get(slug=slug)
+            reid = User.objects.filter(email=receiver_profile.user.email)
+            receiver_user = reid.first()
+        except Profile.DoesNotExist:
+            return render(request, 'error.html', {'error': 'Profile not found.'}, status=404)
+        sender_profile = request.user.profile
+        
+        def get_or_create_chat_room(user1, user2):
+            existing_chat_room = ChatRoom.objects.filter(name=f'Chat between {user1.username} and {user2.username}') | ChatRoom.objects.filter(name=f'Chat between {user2.username} and {user1.username}')
+            if existing_chat_room.exists():
+                return existing_chat_room.first()
+            else:
+                new_chat_room = ChatRoom.objects.create(name=f'Chat between {user1.username} and {user2.username}')
+                return new_chat_room
+        chat_room = get_or_create_chat_room(request.user, receiver_user)
+        messages = ChatMessage.objects.filter((Q(room=chat_room))).order_by('timestamp')
+        print(messages)
+        print(chat_room)
+        if request.method == 'POST':
+            form = forms.ChatMessageForm(request.POST)
+            if form.is_valid():
+                new_message = form.save(commit=False)
+                new_message.sender = request.user
+                new_message.recipient = reid
+                new_message.room_id = chat_room.id
+                new_message.con=form.cleaned_data['cch']
+                new_message.save()
+        else:
+            form = forms.ChatMessageForm()
+        return render(request, 'chat.html', {
+            'chat_room': chat_room,
+            'receiver_user': receiver_user,
+            'sender_profile': sender_profile,
+            'messages': messages,
+            'form': form,
+        })
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Chat'
+        return context
 
 class ProfileFollow(LoginRequiredMixin, View):
     model = Profile

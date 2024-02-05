@@ -28,6 +28,13 @@
                             Отписаться от {{ profile.user.username }}
                         </button>
                     </form>
+                    <br>
+                    <form method="post" action="{% url 'authorz:chat' profile.slug %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            Начать чат с {{ profile.user.username }}
+                        </button>
+                    </form>
 					{% else %}
 					<form method="post" action="{% url 'authorz:profile_messege' profile.slug %}">
                         {% csrf_token %}
@@ -38,6 +45,7 @@
 					{% endif %} {% elif request.user == profile.user %}
 					<a href="{% url 'authorz:profile_edit' %}" class="btn btn-sm btn-primary" name="proedit">Редактировать профиль</a>
 					{% endif %}
+                    
                     </div>
                 </div>
             </div>

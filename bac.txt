@@ -89,4 +89,4 @@ dsfaESDAS
     }
   }
 ]
-
+CMD ["bash", "-c", "python manage.py loaddata dump.json"]

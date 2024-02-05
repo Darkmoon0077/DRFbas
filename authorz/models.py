@@ -123,4 +123,17 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
+class ChatRoom(models.Model):
+    name = models.CharField(max_length=100)
+    def __str__(self):
+        return self.name
+
+class ChatMessage(models.Model):
+    room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
+    sender = models.ForeignKey('authorz.User', related_name='sender', on_delete=models.CASCADE)
+    recipient = models.ForeignKey('authorz.User', on_delete=models.CASCADE, related_name='receiver')
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f'{self.sender} to {self.recipient}: {self.content}'
 

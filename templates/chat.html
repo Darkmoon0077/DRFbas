@@ -1,0 +1,51 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Chat with {{ receiver_user.username }}</h2>
+            <div id="chat-messages">
+            </div>
+            <form id="chat-form">
+                <input type="text" id="message-input" placeholder="Type your message" name="cch">
+                <button type="submit">Send Message</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    const chatMessages = document.getElementById('chat-messages');
+
+    const room_id = '{{ chat_room.id }}';  
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/chat/' + room_id + '/'
+    );
+    
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const messageElement = document.createElement('div');
+        messageElement.innerHTML = '<strong>' + data.sender + ':</strong> ' + data.message;
+        chatMessages.appendChild(messageElement);
+    };
+
+    chatForm.addEventListener('submit', function(event) {
+        console.log('Button clicked!');
+        event.preventDefault();
+        const message = messageInput.value;
+        chatSocket.send(JSON.stringify({
+            'content': message,
+            'room_id': '{{ chat_room.id }}', 
+            'recipient':'{{receiver_user.id}}',
+        }));
+        messageInput.value = '';
+    });
+    chatSocket.onerror = function(event) {console.error('WebSocket error:', event);};
+});
+</script>
+{% endblock %}
