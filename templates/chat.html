@@ -4,8 +4,11 @@
 <div class="container">
     <div class="row">
         <div class="col-md-8">
-            <h2>Chat with {{ receiver_user.username }}</h2>
+            <h2>{{chat_room}}</h2>
             <div id="chat-messages">
+                {% for message in messages %}
+                <div><strong>{{ message.sender.username }}:</strong> {{ message.content }}</div>
+                {% endfor %}
             </div>
             <form id="chat-form">
                 <input type="text" id="message-input" placeholder="Type your message" name="cch">

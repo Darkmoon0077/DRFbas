@@ -47,7 +47,6 @@ class Chat(LoginRequiredMixin, View):
                 return new_chat_room
         chat_room = get_or_create_chat_room(request.user, receiver_user)
         messages = ChatMessage.objects.filter((Q(room=chat_room))).order_by('timestamp')
-        print(messages)
         print(chat_room)
         if request.method == 'POST':
             form = forms.ChatMessageForm(request.POST)
@@ -56,6 +55,7 @@ class Chat(LoginRequiredMixin, View):
                 new_message.sender = request.user
                 new_message.recipient = reid
                 new_message.room_id = chat_room.id
+                new_message.chat_room = chat_room
                 new_message.con=form.cleaned_data['cch']
                 new_message.save()
         else:

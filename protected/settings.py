@@ -133,6 +133,9 @@ EMAIL_ADMIN = ['darkmoon0077@gmail.com']
 LOGIN_REDIRECT_URL = 'authorz:fancy_post'
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",  # Use InMemoryChannelLayer for testing
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
     },
 }
