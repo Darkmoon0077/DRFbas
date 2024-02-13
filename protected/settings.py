@@ -4,7 +4,7 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#1z_xe-ou5%o&-&$f1$y$ya11sx*r!q!j&*#n-r!+#n40*8m_='
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = ['localhost', '0.0.0.0', '127.0.0.1', '134.209.227.216']
 
 INSTALLED_APPS = [
