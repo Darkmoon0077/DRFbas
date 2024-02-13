@@ -117,7 +117,7 @@ SWAGGER_SETTINGS = {
     },
 }
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR / 'static_root')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'templates/src')]
 MEDIA_ROOT = (BASE_DIR / 'media')
 MEDIA_URL = '/media/'
