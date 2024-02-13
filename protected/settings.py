@@ -118,7 +118,7 @@ SWAGGER_SETTINGS = {
 }
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR / 'static_root')
-STATICFILES_DIRS = [os.path.join(BASE_DIR / 'templates/src')]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'templates/src')]
 MEDIA_ROOT = (BASE_DIR / 'media')
 MEDIA_URL = '/media/'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
