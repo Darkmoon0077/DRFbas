@@ -9,6 +9,12 @@ class ProfileUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
+            self.fields['slug'].widget.attrs['placeholder'] = 'Введите id профиля состоящий из букв, цифр и "_"'
+            self.fields['slug'].label = 'Profile unique identificator'
+            self.fields['bio'].widget.attrs['placeholder'] = 'Краткая информация о себе'
+            self.fields['birth_date'].widget.attrs['placeholder'] = 'Укажите дату рождения в формате YYYY-DD-MM'
+            self.fields['bio'].label = 'Profile bio'
+            self.fields['avatar'].label = "Выберите изображение с допустимым форматом (png, jpg, jpeg)"
             self.fields[field].widget.attrs.update({
                 'class': 'form-control',
                 'autocomplete': 'off'
@@ -21,6 +27,10 @@ class UserUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
+            self.fields['username'].widget.attrs['placeholder'] = 'Логин пользователя'
+            self.fields['email'].widget.attrs['placeholder'] = 'Email пользователя'
+            self.fields['first_name'].widget.attrs['placeholder'] = 'Имя пользователя'
+            self.fields['last_name'].widget.attrs['placeholder'] = 'Фамилия пользователя'
             self.fields[field].widget.attrs.update({
                 'class': 'form-control',
                 'autocomplete': 'off'
@@ -31,14 +41,15 @@ class UserUpdateForm(forms.ModelForm):
         if email and User.objects.filter(email=email).exclude(username=username).exists():
             raise forms.ValidationError('Email адрес должен быть уникальным')
         return email
+    
 
 class UserLoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
-            self.fields['email'].widget.attrs['placeholder'] = 'Email пользователя'
+            self.fields['username'].widget.attrs['placeholder'] = 'Email пользователя'
             self.fields['password'].widget.attrs['placeholder'] = 'Пароль пользователя'
-            self.fields['email'].label = 'Email'
+            self.fields['username'].label = 'Email'
             self.fields[field].widget.attrs.update({
                 'class': 'form-control',
                 'autocomplete': 'off'
@@ -47,10 +58,19 @@ class UserLoginForm(AuthenticationForm):
 class PostCreateForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ('title', 'slug', 'body', 'thumbnail')
+        fields = ('title', 'slug', 'sdescription', 'body', 'thumbnail')
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
+            self.fields['title'].widget.attrs['placeholder'] = 'Заголовок статьи'
+            self.fields['title'].label = 'Post title'
+            self.fields['slug'].widget.attrs['placeholder'] = 'Введите id статьи состоящий из букв, цифр и "_"'
+            self.fields['slug'].label = 'Post unique identificator'
+            self.fields['sdescription'].widget.attrs['placeholder'] = 'Короткая аннотация статьи'
+            self.fields['sdescription'].label = 'Post short descriptions'
+            self.fields['body'].widget.attrs['placeholder'] = 'Содержание статьи'
+            self.fields['body'].label = 'Post body'
+            self.fields['thumbnail'].label = "Выберите изображение с допустимым форматом (png, jpg, webp, jpeg, gif)"
             self.fields[field].widget.attrs.update({
                 'class': 'form-control',
                 'autocomplete': 'off'
@@ -64,6 +84,17 @@ class RegForm(forms.Form):
     email = forms.EmailField()
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
+    confirm_password = forms.CharField(widget=forms.PasswordInput)
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        confirm_password = cleaned_data.get("confirm_password")
+
+        if password and confirm_password and password != confirm_password:
+            raise forms.ValidationError("Passwords do not match")
+
+        return cleaned_data
+
 
 class LogForm(forms.Form):
     email = forms.EmailField()

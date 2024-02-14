@@ -116,11 +116,18 @@ SWAGGER_SETTINGS = {
         }
     },
 }
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR / 'templates/src/static')
-STATICFILES_DIRS = [os.path.join(BASE_DIR / 'templates/src')]
-MEDIA_ROOT = (BASE_DIR / 'media')
-MEDIA_URL = '/media/'
+if DEBUG==True:
+    STATIC_URL = '/static/'
+    STATIC_ROOT = (BASE_DIR / 'static')
+    STATICFILES_DIRS = [BASE_DIR / 'templates/src']
+    MEDIA_ROOT = (BASE_DIR / 'media')
+    MEDIA_URL = '/media/'
+else :
+    STATIC_URL = '/static/'
+    STATIC_ROOT = (BASE_DIR , 'templates/src/static')
+    STATICFILES_DIRS = [(BASE_DIR, 'templates/src')]
+    MEDIA_ROOT = (BASE_DIR, 'media')
+    MEDIA_URL = '/media/'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = '587'

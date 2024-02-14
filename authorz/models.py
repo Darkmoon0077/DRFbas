@@ -67,6 +67,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Post(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=100, blank=True, default='')
+    sdescription = models.TextField(blank=True, default='')
     body = models.TextField(blank=True, default='')
     owner = models.ForeignKey('authorz.User', related_name='posts', on_delete=models.CASCADE)
     slug = models.SlugField(verbose_name='URL', max_length=16, blank=False, unique=True)

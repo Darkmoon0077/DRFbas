@@ -7,13 +7,32 @@
             <div class="card-title nth-card-title">
                 <h4>Регистрация на сайте</h4>
             </div>
-            <form method="post" action="{% url 'authorz:exper' %}">
+            <form method="post" action="{% url 'authorz:exper' %}" id="registrationForm">
                 {% csrf_token %}
                 <p>Email:<br> <input name="email" type="email" /></p>
-                <p>Username:<br> <input name="username"  /></p>
-                <p>Password:<br> <input name="password" type="password"/></p>
+                <p>Username:<br> <input name="username" /></p>
+                <p>Password:<br> <input name="password" id="password" type="password" /></p>
+                <p>Confirm Password:<br> <input name="confirm_password" id="confirm_password" type="password" /></p>
+                <p id="passwordMismatch" style="display: none; color: red;">Passwords do not match.</p>
                 <button type="submit" class="btn btn-dark mt-2">Зарегистрироваться</button>
             </form>
+            <script>
+                // JavaScript to validate password matching in real-time
+                const passwordInput = document.getElementById('password');
+                const confirmPasswordInput = document.getElementById('confirm_password');
+                const passwordMismatchMessage = document.getElementById('passwordMismatch');
+            
+                function validatePassword() {
+                    if (passwordInput.value !== confirmPasswordInput.value) {
+                        passwordMismatchMessage.style.display = 'block';
+                    } else {
+                        passwordMismatchMessage.style.display = 'none';
+                    }
+                }
+            
+                passwordInput.addEventListener('input', validatePassword);
+                confirmPasswordInput.addEventListener('input', validatePassword);
+            </script>
         </div>
     </div>
 {% endblock %}
