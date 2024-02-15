@@ -70,7 +70,7 @@ class Post(models.Model):
     sdescription = models.TextField(blank=True, default='')
     body = models.TextField(blank=True, default='')
     owner = models.ForeignKey('authorz.User', related_name='posts', on_delete=models.CASCADE)
-    slug = models.SlugField(verbose_name='URL', max_length=16, blank=False, unique=True)
+    slug = models.SlugField(verbose_name='URL', max_length=24, blank=False, unique=True)
     thumbnail = models.ImageField(
         blank=True, 
         upload_to='images/thumbnails/%Y/%m/', 
@@ -89,7 +89,7 @@ class Post(models.Model):
 User = get_user_model()
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    slug = models.SlugField(verbose_name='URL', max_length=16, blank=False, unique=True)
+    slug = models.SlugField(verbose_name='URL', max_length=24, blank=False, unique=True)
     following = models.ManyToManyField('self', related_name='followers', symmetrical=False, blank=True)
     avatar = models.ImageField(
         verbose_name='Аватар',

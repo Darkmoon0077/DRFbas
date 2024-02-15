@@ -61,12 +61,12 @@ WSGI_APPLICATION = 'protected.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'prdb',
-        'USER': 'zerg',
-        'PASSWORD': 'zergling',
-        'HOST': 'localhost',
-        'PORT': '',
+        'ENGINE': os.environ.get('DB_DRIVER','django.db.backends.postgresql'),
+        'USER': os.environ.get('PG_USER','zerg'),
+        'PASSWORD':os.environ.get('PG_PASSWORD','zergling'),
+        'NAME': os.environ.get('PG_DB','prdb'),
+        'PORT': os.environ.get('PG_PORT','5432'),
+        'HOST': os.environ.get('PG_HOST','localhost'), # uses the container if set, otherwise it runs locally
     }
 }
 
