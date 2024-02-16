@@ -8,6 +8,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, PermissionsMixin)
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.text import slugify
 from rest_framework_simplejwt.tokens import RefreshToken
 from .services.utils import unique_slugify
 
@@ -82,8 +83,8 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('authorz:post_detail', kwargs={'slug': self.slug}) 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = unique_slugify(self, self.title)
+        if not self.slug: 
+            self.slug = slugify(f'{self.id}-{self.created.strftime("%Y-%m-%d")}')
         super().save(*args, **kwargs)
 
 User = get_user_model()

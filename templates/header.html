@@ -13,10 +13,17 @@
               </a>
             </li>
             <li>
-              <a href="{% url 'authorz:post_create' %}" class="nav-link text-white" name="add">
-                <svg class="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#speedometer2"></use></svg>
-                Добавить статью
-              </a>
+              {% if request.user.is_authenticated %}
+                <a href="{% url 'authorz:post_create' %}" class="nav-link text-white" name="add">
+                  <svg class="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#speedometer2"></use></svg>
+                  Добавить статью
+                </a>
+              {% else %}
+                <a href="{% url 'authorz:LogIn' %}" class="nav-link text-white" name="add">
+                  <svg class="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#speedometer2"></use></svg>
+                  Добавить статью
+                </a>
+              {% endif %} 
             </li>
           </ul>
         </div>

@@ -56,14 +56,12 @@ class UserLoginForm(AuthenticationForm):
 class PostCreateForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ('title', 'slug', 'sdescription', 'body', 'thumbnail')
+        fields = ('title', 'sdescription', 'body', 'thumbnail')
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
             self.fields['title'].widget.attrs['placeholder'] = 'Заголовок статьи'
             self.fields['title'].label = 'Post title'
-            self.fields['slug'].widget.attrs['placeholder'] = 'Введите id статьи состоящий из букв, цифр и "_"'
-            self.fields['slug'].label = 'Post unique identificator'
             self.fields['sdescription'].widget.attrs['placeholder'] = 'Короткая аннотация статьи'
             self.fields['sdescription'].label = 'Post short descriptions'
             self.fields['body'].widget.attrs['placeholder'] = 'Содержание статьи'
