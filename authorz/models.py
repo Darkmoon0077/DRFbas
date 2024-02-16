@@ -84,7 +84,7 @@ class Post(models.Model):
         return reverse('authorz:post_detail', kwargs={'slug': self.slug}) 
     def save(self, *args, **kwargs):
         if not self.slug: 
-            self.slug = slugify(f'{self.id}-{self.created.strftime("%Y-%m-%d")}')
+            self.slug = slugify(str(self.id))
         super().save(*args, **kwargs)
 
 User = get_user_model()
