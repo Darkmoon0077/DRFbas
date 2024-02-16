@@ -5,12 +5,10 @@ from django.contrib.auth.forms import AuthenticationForm
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ('slug', 'birth_date', 'bio', 'avatar')
+        fields = ('birth_date', 'bio', 'avatar')
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
-            self.fields['slug'].widget.attrs['placeholder'] = 'Введите id профиля состоящий из букв, цифр и "_"'
-            self.fields['slug'].label = 'Profile unique identificator'
             self.fields['bio'].widget.attrs['placeholder'] = 'Краткая информация о себе'
             self.fields['birth_date'].widget.attrs['placeholder'] = 'Укажите дату рождения в формате YYYY-DD-MM'
             self.fields['bio'].label = 'Profile bio'
