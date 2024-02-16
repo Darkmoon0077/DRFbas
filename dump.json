@@ -1,7 +1,7 @@
 [
   {
     "model": "authorz.user",
-    "pk": 1,
+    "pk": 111,
     "fields": {
       "username": "admin",
       "email": "admin@nimda.com",
@@ -18,7 +18,7 @@
   },
   {
     "model": "authorz.user",
-    "pk": 2,
+    "pk": 222,
     "fields": {
       "username": "nimda",
       "email": "nimda@admin.com",
@@ -32,51 +32,5 @@
       "updated_at": "2022-01-01T12:00:00Z",
       "last_password_update": null
     }
-  },
-  {
-    "model": "authorz.post",
-    "pk": 1,
-    "fields": {
-      "created": "2024-01-22T14:29:13.341839Z",
-      "title": "Test",
-      "body": "First Test",
-      "owner": 1,
-      "slug": "test1",
-      "thumbnail": null
-    }
-  },
-  {
-    "model": "authorz.post",
-    "id": 2,
-    "fields":{
-      "created": "2024-01-22T14:29:13.341839Z",
-      "title": "Test take2",
-      "body": "Second Test",
-      "owner": 1,
-      "slug": "test2",
-      "thumbnail": null}
-  },
-  {
-    "model": "authorz.post",
-    "pk": 3,
-    "fields": {
-      "created": "2024-01-22T14:29:13.341839Z",
-      "title": "Tset",
-      "body": "Test First",
-      "owner": 2,
-      "slug": "1test",
-      "thumbnail": null
-    }
-  },
-  {
-    "model": "authorz.post",
-    "id": 2,
-    "fields":{
-      "created": "2024-01-22T14:29:13.341839Z",
-      "title": "2take test",
-      "body": "Test Second",
-      "owner": 2,
-      "slug": "2test",
-      "thumbnail": null}
   }
 ]
