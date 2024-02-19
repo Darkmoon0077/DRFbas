@@ -30,18 +30,13 @@ class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name', 'last_name')
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields:
-            self.fields['username'].widget.attrs['placeholder'] = 'Логин пользователя'
-            self.fields['email'].widget.attrs['placeholder'] = 'Email пользователя'
-            self.fields['first_name'].widget.attrs['placeholder'] = 'Имя пользователя'
-            self.fields['last_name'].widget.attrs['placeholder'] = 'Фамилия пользователя'
-            self.fields[field].widget.attrs.update({
-                'class': 'form-control',
-                'autocomplete': 'off'
-            })
-        self.fields['email'].widget.attrs['readonly'] = True
+        widgets = {
+            'username': forms.TextInput(attrs={'placeholder': 'Логин пользователя', 'class': 'form-control', 'autocomplete': 'off'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'Email пользователя', 'class': 'form-control', 'autocomplete': 'off', 'readonly': True}),
+            'first_name': forms.TextInput(attrs={'placeholder': 'Имя пользователя', 'class': 'form-control', 'autocomplete': 'off'}),
+            'last_name': forms.TextInput(attrs={'placeholder': 'Фамилия пользователя', 'class': 'form-control', 'autocomplete': 'off'}),
+        }
+
     def clean_email(self):
         email = self.cleaned_data.get('email')
         username = self.cleaned_data.get('username')
@@ -52,15 +47,16 @@ class UserUpdateForm(forms.ModelForm):
         if email and User.objects.filter(email=email).exclude(pk=id).exists():
             raise forms.ValidationError('Email адрес должен быть уникальным')
         return email
+
     def clean_first_name(self):
         first_name = self.cleaned_data.get('first_name')
-        if not first_name.isalpha():
+        if first_name and not first_name.isalpha():
             raise forms.ValidationError('Имя должно содержать только буквы')
         return first_name
 
     def clean_last_name(self):
         last_name = self.cleaned_data.get('last_name')
-        if not last_name.isalpha():
+        if last_name and not last_name.isalpha():
             raise forms.ValidationError('Фамилия должна содержать только буквы')
         return last_name
     
