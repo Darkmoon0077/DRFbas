@@ -1,22 +1,30 @@
+import random, string
 from .models import Profile, User, Post, ChatMessage
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
+
+class DateInput(forms.DateInput):
+    input_type = 'date'
 
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ('birth_date', 'bio', 'avatar')
+        widgets = {
+                'birth_date' : DateInput(),
+            }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
             self.fields['bio'].widget.attrs['placeholder'] = 'Краткая информация о себе'
-            self.fields['birth_date'].widget.attrs['placeholder'] = 'Укажите дату рождения в формате YYYY-DD-MM'
+            self.fields['birth_date'].label = 'Date of birth'
             self.fields['bio'].label = 'Profile bio'
             self.fields['avatar'].label = "Выберите изображение с допустимым форматом (png, jpg, jpeg)"
             self.fields[field].widget.attrs.update({
                 'class': 'form-control',
                 'autocomplete': 'off'
             })
+            
 
 class UserUpdateForm(forms.ModelForm):
     class Meta:
@@ -33,6 +41,7 @@ class UserUpdateForm(forms.ModelForm):
                 'class': 'form-control',
                 'autocomplete': 'off'
             })
+        self.fields['email'].widget.attrs['readonly'] = True
     def clean_email(self):
         email = self.cleaned_data.get('email')
         username = self.cleaned_data.get('username')
@@ -43,6 +52,17 @@ class UserUpdateForm(forms.ModelForm):
         if email and User.objects.filter(email=email).exclude(pk=id).exists():
             raise forms.ValidationError('Email адрес должен быть уникальным')
         return email
+    def clean_first_name(self):
+        first_name = self.cleaned_data.get('first_name')
+        if not first_name.isalpha():
+            raise forms.ValidationError('Имя должно содержать только буквы')
+        return first_name
+
+    def clean_last_name(self):
+        last_name = self.cleaned_data.get('last_name')
+        if not last_name.isalpha():
+            raise forms.ValidationError('Фамилия должна содержать только буквы')
+        return last_name
     
 
 class UserLoginForm(AuthenticationForm):
@@ -60,7 +80,13 @@ class UserLoginForm(AuthenticationForm):
 class PostCreateForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ('title', 'sdescription', 'body', 'thumbnail')
+        fields = ('title', 'slug', 'sdescription', 'body', 'thumbnail')
+    def make_slug(self):
+        while True:
+            random_slug = ''.join(random.choices(string.digits, k=8))
+            if not Post.objects.filter(slug=random_slug).exists():
+                break 
+        return random_slug
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
@@ -75,6 +101,13 @@ class PostCreateForm(forms.ModelForm):
                 'class': 'form-control',
                 'autocomplete': 'off'
             })
+        self.fields['slug'] = forms.SlugField(widget=forms.HiddenInput(), required=False)
+    def clean_slug(self):
+        if not self.cleaned_data['slug']:
+            return self.make_slug()
+        return self.cleaned_data['slug']
+    
+
 
 class PostUpdateForm(PostCreateForm):
     def __init__(self, *args, **kwargs):
