@@ -36,7 +36,11 @@ class UserUpdateForm(forms.ModelForm):
     def clean_email(self):
         email = self.cleaned_data.get('email')
         username = self.cleaned_data.get('username')
-        if email and User.objects.filter(email=email).exclude(username=username).exists():
+        u = User.objects.filter(username=username).first()
+        if u is None:
+            u = User.objects.filter(email=email).first()
+        id = u.id
+        if email and User.objects.filter(email=email).exclude(pk=id).exists():
             raise forms.ValidationError('Email адрес должен быть уникальным')
         return email
     
